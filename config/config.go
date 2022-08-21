@@ -38,10 +38,11 @@ type ServerConfig struct {
 }
 
 type Config struct {
-	LogInfo    LogConfig    `json:"log_info"`
-	DBInfo     DBConfig     `json:"db_info"`
-	ServerInfo ServerConfig `json:"server_info"`
-	S3Info     S3Config     `json:"s3_info"`
+	LogInfo     LogConfig    `json:"log_info"`
+	GameDBInfo  DBConfig     `json:"game_db_info"`
+	MediaDBInfo DBConfig     `json:"media_db_info"`
+	ServerInfo  ServerConfig `json:"server_info"`
+	S3Info      S3Config     `json:"s3_info"`
 }
 
 func Parse(f string) (*Config, error) {

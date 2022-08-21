@@ -27,8 +27,11 @@ func main() {
 
 	log.Infof("recv config:%+v", *c)
 
-	if err := db.InitGameDB(&c.DBInfo); err != nil {
-		log.Fatalf("init db fail, err:%v", err)
+	if err := db.InitGameDB(&c.GameDBInfo); err != nil {
+		log.Fatalf("init game db fail, err:%v", err)
+	}
+	if err := db.InitMediaDB(&c.MediaDBInfo); err != nil {
+		log.Fatalf("init media db fail, err:%v", err)
 	}
 	if err := s3.InitGlobal(
 		s3.WithEndpoint(c.S3Info.Endpoint),
