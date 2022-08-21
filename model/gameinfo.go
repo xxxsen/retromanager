@@ -28,6 +28,14 @@ type OrderBy struct {
 	Asc   bool
 }
 
+type GetGameRequest struct {
+	GameId uint64
+}
+
+type GetGameResponse struct {
+	Item *GameItem
+}
+
 type ListGameRequest struct {
 	Query     *ListQuery
 	Order     *OrderBy
@@ -51,6 +59,7 @@ type GameItem struct {
 	CreateTime  uint64
 	UpdateTime  uint64
 	Hash        string
+	DownKey     string
 	ExtInfo     []byte
 }
 
@@ -65,6 +74,7 @@ func (item *GameItem) ToPBItem() (*gameinfo.GameInfo, error) {
 		CreateTime:  proto.Uint64(item.CreateTime),
 		UpdateTime:  proto.Uint64(item.UpdateTime),
 		Hash:        proto.String(item.Hash),
+		DownKey:     proto.String(item.DownKey),
 		Extinfo:     &gameinfo.GameExtInfo{},
 	}
 	if err := proto.Unmarshal(item.ExtInfo, info.Extinfo); err != nil {

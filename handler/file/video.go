@@ -13,6 +13,6 @@ var videoBucketGetter = func(ctx *gin.Context) string {
 }
 
 var VideoUpload = postUploader(constants.MaxPostUploadVideoSize,
-	videoBucketGetter, model.FileTypeVideo)
+	videoBucketGetter, uint32(model.FileTypeVideo))
 
-var VideoDownload = mediaFileDownload(videoBucketGetter, model.FileTypeVideo, fileDownloadRequestToHash)
+var VideoDownload = mediaFileDownload(videoBucketGetter, uint32(model.FileTypeVideo), fileDownloadRequestToHash)

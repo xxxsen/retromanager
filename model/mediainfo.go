@@ -1,12 +1,5 @@
 package model
 
-type FileType uint8
-
-const (
-	FileTypeVideo = 1
-	FileTypeImage = 2
-)
-
 type CreateMediaRequest struct {
 	Item *MediaItem
 }

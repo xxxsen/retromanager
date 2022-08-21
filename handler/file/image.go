@@ -18,7 +18,7 @@ var imageBucketGetter = func(ctx *gin.Context) string {
 	return utils.MustGetConfig(ctx).BucketInfo.ImageBucket
 }
 
-var ImageUpload = postUploader(constants.MaxPostUploadImageSize, imageBucketGetter, model.FileTypeImage)
+var ImageUpload = postUploader(constants.MaxPostUploadImageSize, imageBucketGetter, uint32(model.FileTypeImage))
 
 func fileDownloadRequestToHash(ctx *gin.Context, request interface{}) (string, error) {
 	req, ok := request.(*FileDownloadRequest)
@@ -28,4 +28,4 @@ func fileDownloadRequestToHash(ctx *gin.Context, request interface{}) (string, e
 	return req.FileId, nil
 }
 
-var ImageDownload = mediaFileDownload(imageBucketGetter, model.FileTypeImage, fileDownloadRequestToHash)
+var ImageDownload = mediaFileDownload(imageBucketGetter, uint32(model.FileTypeImage), fileDownloadRequestToHash)

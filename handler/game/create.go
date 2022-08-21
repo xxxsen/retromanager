@@ -37,6 +37,9 @@ func checkCreate(req *gameinfo.CreateGameRequest) error {
 	if item.Extinfo == nil {
 		return fmt.Errorf("nil extinfo")
 	}
+	if len(item.GetDownKey()) == 0 {
+		return fmt.Errorf("down key not found")
+	}
 	return nil
 }
 
@@ -64,6 +67,7 @@ func CreateGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 			CreateTime:  now,
 			UpdateTime:  now,
 			Hash:        item.GetHash(),
+			DownKey:     item.GetDownKey(),
 			ExtInfo:     extinfo,
 		},
 	}

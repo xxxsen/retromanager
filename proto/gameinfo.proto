@@ -25,6 +25,7 @@ message GameInfo {
     optional uint64 update_time = 8; //
     optional string hash = 9; //
     optional GameExtInfo extinfo = 10; //
+    optional string down_key = 11; //
 }
 
 message ListGameRequest {
@@ -115,6 +116,7 @@ message VideoUploadResponse {
 
 message FileUploadBeginRequest {
     optional uint64 file_size = 1; //
+    optional string hash = 2; //
 }
 
 message FileUploadBeginResponse {

@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"retromanager/cache"
+	"retromanager/codec"
 	"retromanager/constants"
 	"retromanager/dao"
 	"retromanager/errs"
@@ -95,7 +96,14 @@ func createPostUploadRsp(fileid string) *gameinfo.ImageUploadResponse {
 }
 
 func mediaFileDownload(bucketGetter bucketGetterFunc, typ uint32, hashGetter hashGetterFunc) server.ProcessFunc {
-	return func(ctx *gin.Context, req interface{}) (int, errs.IError, interface{}) {
+	return func(ctx *gin.Context, req interface{}) (statuscode int, retErr errs.IError, response interface{}) {
+		defer func() {
+			if errs.IsErrOK(retErr) {
+				return
+			}
+			codec.JsonCodec.Encode(ctx, statuscode, retErr, response)
+		}()
+
 		hash, err := hashGetter(ctx, req)
 		if err != nil {
 			return http.StatusOK, errs.Wrap(constants.ErrParam, "hash not found", err), nil
@@ -113,16 +121,19 @@ func mediaFileDownload(bucketGetter bucketGetterFunc, typ uint32, hashGetter has
 			return http.StatusOK, errs.Wrap(constants.ErrS3, "read stream fail", err), nil
 		}
 		defer reader.Close()
-
-		writer := ctx.Writer
-		writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", strconv.Quote(meta.FileName)))
-		writer.Header().Set("Content-Length", fmt.Sprintf("%d", meta.FileSize))
-		writer.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(meta.FileName)))
-		sz, err := io.Copy(ctx.Writer, reader)
-		if err != nil || sz != int64(meta.FileSize) {
-			log.Errorf("write data to remote fail, path:%s, hash:%s, sz:%d, err:%v", ctx.Request.URL.Path, hash, sz, err)
-		}
+		fileToDownload(ctx, reader, hash, meta.FileName, meta.FileSize)
 		return http.StatusOK, nil, nil
+	}
+}
+
+func fileToDownload(ctx *gin.Context, reader io.Reader, fileid string, name string, size uint64) {
+	writer := ctx.Writer
+	writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", strconv.Quote(name)))
+	writer.Header().Set("Content-Length", fmt.Sprintf("%d", size))
+	writer.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(name)))
+	sz, err := io.Copy(ctx.Writer, reader)
+	if err != nil || sz != int64(size) {
+		log.Errorf("write data to remote fail, path:%s, fileid:%s, sz:%d, err:%v", ctx.Request.URL.Path, fileid, sz, err)
 	}
 }
 

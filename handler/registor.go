@@ -27,7 +27,8 @@ func OnRegist(router *gin.Engine) {
 	}
 	//download
 	{
-		router.POST("/image", WrapHandler(&file.FileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.ImageDownload))
-		router.POST("/video", WrapHandler(&file.FileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.VideoDownload))
+		router.GET("/image", WrapHandler(&file.FileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.ImageDownload))
+		router.GET("/video", WrapHandler(&file.FileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.VideoDownload))
+		router.GET("/rom", WrapHandler(&file.GameDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.RomDownload))
 	}
 }

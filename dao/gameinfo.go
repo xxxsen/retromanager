@@ -14,12 +14,13 @@ import (
 )
 
 var gameinfoFields = []string{
-	"id", "platform", "display_name", "file_name", "file_size", "desc", "create_time", "update_time", "hash", "extinfo",
+	"id", "platform", "display_name", "file_name", "file_size", "desc", "create_time", "update_time", "hash", "extinfo", "down_key",
 }
 
 var GameInfoDao = NewGameInfoDao()
 
 type GameInfoService interface {
+	GetGame(ctx context.Context, req *model.GetGameRequest) (*model.GetGameResponse, bool, error)
 	ListGame(ctx context.Context, req *model.ListGameRequest) (*model.ListGameResponse, error)
 	CreateGame(ctx context.Context, req *model.CreateGameRequest) (*model.CreateGameResponse, error)
 	ModifyGame(ctx context.Context, req *model.ModifyGameRequest) (*model.ModifyGameResponse, error)
@@ -69,6 +70,23 @@ func (d *gameinfoImpl) buildTotal(ctx context.Context, where map[string]interfac
 	return total, nil
 }
 
+func (d *gameinfoImpl) GetGame(ctx context.Context, req *model.GetGameRequest) (*model.GetGameResponse, bool, error) {
+	subReq := &model.ListGameRequest{
+		Query:     &model.ListQuery{ID: &req.GameId},
+		NeedTotal: false,
+		Offset:    0,
+		Limit:     1,
+	}
+	subRsp, err := d.ListGame(ctx, subReq)
+	if err != nil {
+		return nil, false, err
+	}
+	if len(subRsp.List) == 0 {
+		return nil, false, nil
+	}
+	return &model.GetGameResponse{Item: subRsp.List[0]}, true, nil
+}
+
 func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest) (*model.ListGameResponse, error) {
 	where := map[string]interface{}{
 		"_limit": []uint{uint(req.Offset), uint(req.Limit)},
@@ -104,7 +122,7 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 		item := &model.GameItem{}
 		if err := rows.Scan(&item.ID, &item.Platform, &item.DisplayName,
 			&item.FileName, &item.FileSize, &item.Desc, &item.CreateTime,
-			&item.UpdateTime, &item.Hash, &item.ExtInfo); err != nil {
+			&item.UpdateTime, &item.Hash, &item.ExtInfo, &item.DownKey); err != nil {
 
 			return nil, errs.Wrap(constants.ErrDatabase, "scan", err)
 		}
@@ -136,6 +154,7 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 			"update_time":  item.UpdateTime,
 			"hash":         item.Hash,
 			"extinfo":      item.ExtInfo,
+			"down_key":     item.DownKey,
 		},
 	}
 	sql, args, err := builder.BuildInsert(d.Table(), data)
