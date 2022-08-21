@@ -6,6 +6,8 @@ require (
 	github.com/didi/gendry v1.7.0
 	github.com/elastic/go-elasticsearch/v7 v7.17.0
 	github.com/gin-gonic/gin v1.8.1
+	github.com/hashicorp/golang-lru v0.5.4
+	github.com/hnlq715/golang-lru v0.3.0
 	github.com/minio/minio-go/v7 v7.0.34
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/xxxsen/log v0.0.2

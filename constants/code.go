@@ -11,4 +11,5 @@ const (
 	ErrCache           = 100006
 	ErrES              = 100007
 	ErrS3              = 100008
+	ErrIO              = 100009
 )

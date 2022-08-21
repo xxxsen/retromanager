@@ -20,7 +20,7 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("Error:[code:%d, msg:%s, err:%v, extmsg:[%+v]]", e.code, e.msg, e.err, e.extmsg)
+	return fmt.Sprintf("Error:[code:%d, msg:%s, err:[%v], extmsg:[%+v]]", e.code, e.msg, e.err, e.extmsg)
 }
 
 func (e *Error) Code() int64 {

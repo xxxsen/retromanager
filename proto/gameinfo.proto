@@ -104,3 +104,33 @@ message DeleteGameRequest {
 message DeleteGameResponse {
 
 }
+
+message ImageUploadResponse {
+    optional string file_id = 1; //
+}
+
+message VideoUploadResponse {
+    optional string file_id = 1; //
+}
+
+message FileUploadBeginRequest {
+    optional uint64 file_size = 1; //
+}
+
+message FileUploadBeginResponse {
+    optional string upload_id = 1; //
+}
+
+message FileUploadPartResponse {
+    optional string part_id = 1; //
+}
+
+message FileUploadEndRequest {
+    optional uint64 file_size = 1; //
+    optional string upload_id = 2; //
+    repeated string part_ids = 3; //
+}
+
+message FileUploadEndResponse {
+    optional string file_id = 1; //
+}

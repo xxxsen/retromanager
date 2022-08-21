@@ -6,6 +6,7 @@ import (
 	"retromanager/constants"
 	"retromanager/db"
 	"retromanager/handler"
+	hconfig "retromanager/handler/config"
 	"retromanager/s3"
 	"retromanager/server"
 
@@ -41,12 +42,22 @@ func main() {
 	svr, err := server.NewServer(
 		server.WithAddress(c.ServerInfo.Address),
 		server.WithHandlerRegister(handler.OnRegist),
-		server.WithAttach(constants.KeyConfigAttach, c),
+		server.WithAttach(constants.KeyConfigAttach, initServiceConfig(c)),
 	)
 	if err != nil {
 		log.Fatalf("init server fail, err:%v", err)
 	}
 	if err := svr.Run(); err != nil {
 		log.Fatalf("run server fail, err:%w", err)
+	}
+}
+
+func initServiceConfig(c *config.Config) *hconfig.Config {
+	return &hconfig.Config{
+		BucketInfo: &hconfig.Bucket{
+			RomBucket:   c.S3Info.RomBucket,
+			ImageBucket: c.S3Info.ImageBucket,
+			VideoBucket: c.S3Info.VideoBucket,
+		},
 	}
 }

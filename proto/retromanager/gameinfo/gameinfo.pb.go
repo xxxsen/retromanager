@@ -1082,6 +1082,351 @@ func (*DeleteGameResponse) Descriptor() ([]byte, []int) {
 	return file_gameinfo_proto_rawDescGZIP(), []int{16}
 }
 
+type ImageUploadResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FileId *string `protobuf:"bytes,1,opt,name=file_id,json=fileId" json:"file_id,omitempty"` //
+}
+
+func (x *ImageUploadResponse) Reset() {
+	*x = ImageUploadResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ImageUploadResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImageUploadResponse) ProtoMessage() {}
+
+func (x *ImageUploadResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImageUploadResponse.ProtoReflect.Descriptor instead.
+func (*ImageUploadResponse) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ImageUploadResponse) GetFileId() string {
+	if x != nil && x.FileId != nil {
+		return *x.FileId
+	}
+	return ""
+}
+
+type VideoUploadResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FileId *string `protobuf:"bytes,1,opt,name=file_id,json=fileId" json:"file_id,omitempty"` //
+}
+
+func (x *VideoUploadResponse) Reset() {
+	*x = VideoUploadResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *VideoUploadResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VideoUploadResponse) ProtoMessage() {}
+
+func (x *VideoUploadResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VideoUploadResponse.ProtoReflect.Descriptor instead.
+func (*VideoUploadResponse) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *VideoUploadResponse) GetFileId() string {
+	if x != nil && x.FileId != nil {
+		return *x.FileId
+	}
+	return ""
+}
+
+type FileUploadBeginRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FileSize *uint64 `protobuf:"varint,1,opt,name=file_size,json=fileSize" json:"file_size,omitempty"` //
+}
+
+func (x *FileUploadBeginRequest) Reset() {
+	*x = FileUploadBeginRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[19]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FileUploadBeginRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileUploadBeginRequest) ProtoMessage() {}
+
+func (x *FileUploadBeginRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[19]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileUploadBeginRequest.ProtoReflect.Descriptor instead.
+func (*FileUploadBeginRequest) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *FileUploadBeginRequest) GetFileSize() uint64 {
+	if x != nil && x.FileSize != nil {
+		return *x.FileSize
+	}
+	return 0
+}
+
+type FileUploadBeginResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	UploadId *string `protobuf:"bytes,1,opt,name=upload_id,json=uploadId" json:"upload_id,omitempty"` //
+}
+
+func (x *FileUploadBeginResponse) Reset() {
+	*x = FileUploadBeginResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FileUploadBeginResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileUploadBeginResponse) ProtoMessage() {}
+
+func (x *FileUploadBeginResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileUploadBeginResponse.ProtoReflect.Descriptor instead.
+func (*FileUploadBeginResponse) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *FileUploadBeginResponse) GetUploadId() string {
+	if x != nil && x.UploadId != nil {
+		return *x.UploadId
+	}
+	return ""
+}
+
+type FileUploadPartResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	PartId *string `protobuf:"bytes,1,opt,name=part_id,json=partId" json:"part_id,omitempty"` //
+}
+
+func (x *FileUploadPartResponse) Reset() {
+	*x = FileUploadPartResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[21]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FileUploadPartResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileUploadPartResponse) ProtoMessage() {}
+
+func (x *FileUploadPartResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[21]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileUploadPartResponse.ProtoReflect.Descriptor instead.
+func (*FileUploadPartResponse) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *FileUploadPartResponse) GetPartId() string {
+	if x != nil && x.PartId != nil {
+		return *x.PartId
+	}
+	return ""
+}
+
+type FileUploadEndRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FileSize *uint64  `protobuf:"varint,1,opt,name=file_size,json=fileSize" json:"file_size,omitempty"` //
+	UploadId *string  `protobuf:"bytes,2,opt,name=upload_id,json=uploadId" json:"upload_id,omitempty"`  //
+	PartIds  []string `protobuf:"bytes,3,rep,name=part_ids,json=partIds" json:"part_ids,omitempty"`     //
+}
+
+func (x *FileUploadEndRequest) Reset() {
+	*x = FileUploadEndRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[22]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FileUploadEndRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileUploadEndRequest) ProtoMessage() {}
+
+func (x *FileUploadEndRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[22]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileUploadEndRequest.ProtoReflect.Descriptor instead.
+func (*FileUploadEndRequest) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *FileUploadEndRequest) GetFileSize() uint64 {
+	if x != nil && x.FileSize != nil {
+		return *x.FileSize
+	}
+	return 0
+}
+
+func (x *FileUploadEndRequest) GetUploadId() string {
+	if x != nil && x.UploadId != nil {
+		return *x.UploadId
+	}
+	return ""
+}
+
+func (x *FileUploadEndRequest) GetPartIds() []string {
+	if x != nil {
+		return x.PartIds
+	}
+	return nil
+}
+
+type FileUploadEndResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FileId *string `protobuf:"bytes,1,opt,name=file_id,json=fileId" json:"file_id,omitempty"` //
+}
+
+func (x *FileUploadEndResponse) Reset() {
+	*x = FileUploadEndResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[23]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FileUploadEndResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileUploadEndResponse) ProtoMessage() {}
+
+func (x *FileUploadEndResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[23]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileUploadEndResponse.ProtoReflect.Descriptor instead.
+func (*FileUploadEndResponse) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *FileUploadEndResponse) GetFileId() string {
+	if x != nil && x.FileId != nil {
+		return *x.FileId
+	}
+	return ""
+}
+
 var File_gameinfo_proto protoreflect.FileDescriptor
 
 var file_gameinfo_proto_rawDesc = []byte{
@@ -1196,9 +1541,35 @@ var file_gameinfo_proto_rawDesc = []byte{
 	0x6d, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x17, 0x0a, 0x07, 0x67, 0x61, 0x6d,
 	0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x06, 0x67, 0x61, 0x6d, 0x65,
 	0x49, 0x64, 0x22, 0x14, 0x0a, 0x12, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x47, 0x61, 0x6d, 0x65,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x17, 0x5a, 0x15, 0x72, 0x65, 0x74, 0x72,
-	0x6f, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x2f, 0x67, 0x61, 0x6d, 0x65, 0x69, 0x6e, 0x66,
-	0x6f,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x2e, 0x0a, 0x13, 0x49, 0x6d, 0x61, 0x67,
+	0x65, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x17, 0x0a, 0x07, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x66, 0x69, 0x6c, 0x65, 0x49, 0x64, 0x22, 0x2e, 0x0a, 0x13, 0x56, 0x69, 0x64, 0x65,
+	0x6f, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x17, 0x0a, 0x07, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x66, 0x69, 0x6c, 0x65, 0x49, 0x64, 0x22, 0x35, 0x0a, 0x16, 0x46, 0x69, 0x6c, 0x65,
+	0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x42, 0x65, 0x67, 0x69, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x53, 0x69, 0x7a, 0x65, 0x22,
+	0x36, 0x0a, 0x17, 0x46, 0x69, 0x6c, 0x65, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x42, 0x65, 0x67,
+	0x69, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x75, 0x70,
+	0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x75,
+	0x70, 0x6c, 0x6f, 0x61, 0x64, 0x49, 0x64, 0x22, 0x31, 0x0a, 0x16, 0x46, 0x69, 0x6c, 0x65, 0x55,
+	0x70, 0x6c, 0x6f, 0x61, 0x64, 0x50, 0x61, 0x72, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x17, 0x0a, 0x07, 0x70, 0x61, 0x72, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x70, 0x61, 0x72, 0x74, 0x49, 0x64, 0x22, 0x6b, 0x0a, 0x14, 0x46, 0x69,
+	0x6c, 0x65, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x45, 0x6e, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x53, 0x69, 0x7a, 0x65, 0x12,
+	0x1b, 0x0a, 0x09, 0x75, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x08, 0x75, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08,
+	0x70, 0x61, 0x72, 0x74, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x09, 0x52, 0x07,
+	0x70, 0x61, 0x72, 0x74, 0x49, 0x64, 0x73, 0x22, 0x30, 0x0a, 0x15, 0x46, 0x69, 0x6c, 0x65, 0x55,
+	0x70, 0x6c, 0x6f, 0x61, 0x64, 0x45, 0x6e, 0x64, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x17, 0x0a, 0x07, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x06, 0x66, 0x69, 0x6c, 0x65, 0x49, 0x64, 0x42, 0x17, 0x5a, 0x15, 0x72, 0x65, 0x74,
+	0x72, 0x6f, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x2f, 0x67, 0x61, 0x6d, 0x65, 0x69, 0x6e,
+	0x66, 0x6f,
 }
 
 var (
@@ -1213,25 +1584,32 @@ func file_gameinfo_proto_rawDescGZIP() []byte {
 	return file_gameinfo_proto_rawDescData
 }
 
-var file_gameinfo_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_gameinfo_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_gameinfo_proto_goTypes = []interface{}{
-	(*GameExtInfo)(nil),        // 0: gameinfo.GameExtInfo
-	(*GameInfo)(nil),           // 1: gameinfo.GameInfo
-	(*ListGameRequest)(nil),    // 2: gameinfo.ListGameRequest
-	(*ListGameResponse)(nil),   // 3: gameinfo.ListGameResponse
-	(*FilterSearch)(nil),       // 4: gameinfo.FilterSearch
-	(*RangeSearch)(nil),        // 5: gameinfo.RangeSearch
-	(*Page)(nil),               // 6: gameinfo.Page
-	(*OrderBy)(nil),            // 7: gameinfo.OrderBy
-	(*CommonSearch)(nil),       // 8: gameinfo.CommonSearch
-	(*SearchGameRequest)(nil),  // 9: gameinfo.SearchGameRequest
-	(*SearchGameResponse)(nil), // 10: gameinfo.SearchGameResponse
-	(*CreateGameRequest)(nil),  // 11: gameinfo.CreateGameRequest
-	(*CreateGameResponse)(nil), // 12: gameinfo.CreateGameResponse
-	(*ModifyItem)(nil),         // 13: gameinfo.ModifyItem
-	(*ModifyGameRequest)(nil),  // 14: gameinfo.ModifyGameRequest
-	(*DeleteGameRequest)(nil),  // 15: gameinfo.DeleteGameRequest
-	(*DeleteGameResponse)(nil), // 16: gameinfo.DeleteGameResponse
+	(*GameExtInfo)(nil),             // 0: gameinfo.GameExtInfo
+	(*GameInfo)(nil),                // 1: gameinfo.GameInfo
+	(*ListGameRequest)(nil),         // 2: gameinfo.ListGameRequest
+	(*ListGameResponse)(nil),        // 3: gameinfo.ListGameResponse
+	(*FilterSearch)(nil),            // 4: gameinfo.FilterSearch
+	(*RangeSearch)(nil),             // 5: gameinfo.RangeSearch
+	(*Page)(nil),                    // 6: gameinfo.Page
+	(*OrderBy)(nil),                 // 7: gameinfo.OrderBy
+	(*CommonSearch)(nil),            // 8: gameinfo.CommonSearch
+	(*SearchGameRequest)(nil),       // 9: gameinfo.SearchGameRequest
+	(*SearchGameResponse)(nil),      // 10: gameinfo.SearchGameResponse
+	(*CreateGameRequest)(nil),       // 11: gameinfo.CreateGameRequest
+	(*CreateGameResponse)(nil),      // 12: gameinfo.CreateGameResponse
+	(*ModifyItem)(nil),              // 13: gameinfo.ModifyItem
+	(*ModifyGameRequest)(nil),       // 14: gameinfo.ModifyGameRequest
+	(*DeleteGameRequest)(nil),       // 15: gameinfo.DeleteGameRequest
+	(*DeleteGameResponse)(nil),      // 16: gameinfo.DeleteGameResponse
+	(*ImageUploadResponse)(nil),     // 17: gameinfo.ImageUploadResponse
+	(*VideoUploadResponse)(nil),     // 18: gameinfo.VideoUploadResponse
+	(*FileUploadBeginRequest)(nil),  // 19: gameinfo.FileUploadBeginRequest
+	(*FileUploadBeginResponse)(nil), // 20: gameinfo.FileUploadBeginResponse
+	(*FileUploadPartResponse)(nil),  // 21: gameinfo.FileUploadPartResponse
+	(*FileUploadEndRequest)(nil),    // 22: gameinfo.FileUploadEndRequest
+	(*FileUploadEndResponse)(nil),   // 23: gameinfo.FileUploadEndResponse
 }
 var file_gameinfo_proto_depIdxs = []int32{
 	0,  // 0: gameinfo.GameInfo.extinfo:type_name -> gameinfo.GameExtInfo
@@ -1462,6 +1840,90 @@ func file_gameinfo_proto_init() {
 				return nil
 			}
 		}
+		file_gameinfo_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ImageUploadResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gameinfo_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*VideoUploadResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gameinfo_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FileUploadBeginRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gameinfo_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FileUploadBeginResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gameinfo_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FileUploadPartResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gameinfo_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FileUploadEndRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gameinfo_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FileUploadEndResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1469,7 +1931,7 @@ func file_gameinfo_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_gameinfo_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

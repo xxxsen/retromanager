@@ -31,7 +31,9 @@ func wrapHandler(h server.IHandler) gin.HandlerFunc {
 		}()
 		req := h.Request()
 		c := h.Codec()
-		err = c.Decode(ctx, req)
+		if req != nil {
+			err = c.Decode(ctx, req)
+		}
 		if !errs.IsErrOK(err) {
 			writeJson(ctx, err)
 			log.Errorf("decode request fail, path:%s, err:%v", ctx.Request.URL.Path, err)

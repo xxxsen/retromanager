@@ -10,6 +10,6 @@ create game_info_tab (
     hash char(32) not null,
     extinfo blob not null,
     primary key(id),
-    key idx_hash(hash),
+    unique idx_hash(hash),
     key idx_platform_createtime(platform, create_time)
 ) ENGINE=InnoDB CHARACTER SET utf8mb4;
