@@ -9,5 +9,6 @@ const (
 	ErrStorage         = 100004
 	ErrDatabase        = 100005
 	ErrCache           = 100006
-	ErrES              = 1000007
+	ErrES              = 100007
+	ErrS3              = 100008
 )

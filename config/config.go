@@ -23,6 +23,16 @@ type LogConfig struct {
 	Console   bool   `json:"console"`
 }
 
+type S3Config struct {
+	Endpoint    string `json:"endpoint"`
+	SecretId    string `json:"secret_id"`
+	SecretKey   string `json:"secret_key"`
+	UseSSL      bool   `json:"use_ssl"`
+	RomBucket   string `json:"rom_bucket"`
+	VideoBucket string `json:"video_bucket"`
+	ImageBucket string `json:"image_bucket"`
+}
+
 type ServerConfig struct {
 	Address string
 }
@@ -31,6 +41,7 @@ type Config struct {
 	LogInfo    LogConfig    `json:"log_info"`
 	DBInfo     DBConfig     `json:"db_info"`
 	ServerInfo ServerConfig `json:"server_info"`
+	S3Info     S3Config     `json:"s3_info"`
 }
 
 func Parse(f string) (*Config, error) {

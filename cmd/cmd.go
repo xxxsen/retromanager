@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"retromanager/config"
+	"retromanager/constants"
 	"retromanager/db"
 	"retromanager/handler"
+	"retromanager/s3"
 	"retromanager/server"
 
 	"github.com/xxxsen/log"
@@ -27,10 +29,19 @@ func main() {
 	if err := db.InitGameDB(&c.DBInfo); err != nil {
 		log.Fatalf("init db fail, err:%v", err)
 	}
+	if err := s3.InitGlobal(
+		s3.WithEndpoint(c.S3Info.Endpoint),
+		s3.WithSSL(c.S3Info.UseSSL),
+		s3.WithSecret(c.S3Info.SecretId, c.S3Info.SecretKey),
+	); err != nil {
+		log.Fatalf("init s3 fail, err:%w", err)
+	}
+
 	//TODO: init es
 	svr, err := server.NewServer(
 		server.WithAddress(c.ServerInfo.Address),
 		server.WithHandlerRegister(handler.OnRegist),
+		server.WithAttach(constants.KeyConfigAttach, c),
 	)
 	if err != nil {
 		log.Fatalf("init server fail, err:%v", err)

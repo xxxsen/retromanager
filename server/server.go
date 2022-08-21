@@ -12,7 +12,9 @@ type server struct {
 }
 
 func NewServer(opts ...Option) (*server, error) {
-	c := &Config{}
+	c := &Config{
+		attach: make(map[string]interface{}),
+	}
 	for _, opt := range opts {
 		opt(c)
 	}
@@ -32,9 +34,17 @@ func (s *server) initServer() error {
 
 func (s *server) Run() error {
 	engine := gin.New()
+	s.registDefault(engine)
 	s.c.registerFn(engine)
 	if err := engine.Run(s.c.addresses...); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (s *server) registDefault(engine *gin.Engine) {
+	engine.Use(
+		PanicRecoverMiddleware(s),
+		SupportAttachMiddleware(s),
+	)
 }
