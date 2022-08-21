@@ -7,6 +7,7 @@ require (
 	github.com/elastic/go-elasticsearch/v7 v7.17.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/gorilla/schema v1.2.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/hnlq715/golang-lru v0.3.0
 	github.com/minio/minio-go/v7 v7.0.34

@@ -12,4 +12,5 @@ const (
 	ErrES              = 100007
 	ErrS3              = 100008
 	ErrIO              = 100009
+	ErrNotFound        = 100404
 )

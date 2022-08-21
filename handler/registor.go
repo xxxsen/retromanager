@@ -27,7 +27,7 @@ func OnRegist(router *gin.Engine) {
 	}
 	//download
 	{
-		//downloadRouter := router.Group("download")
-
+		router.POST("/image", WrapHandler(&file.FileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.ImageDownload))
+		router.POST("/video", WrapHandler(&file.FileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.VideoDownload))
 	}
 }

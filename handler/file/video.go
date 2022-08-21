@@ -8,7 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var videoBucketGetter = func(ctx *gin.Context) string {
+	return utils.MustGetConfig(ctx).BucketInfo.VideoBucket
+}
+
 var VideoUpload = postUploader(constants.MaxPostUploadVideoSize,
-	func(ctx *gin.Context) string {
-		return utils.MustGetConfig(ctx).BucketInfo.VideoBucket
-	}, model.FileTypeVideo)
+	videoBucketGetter, model.FileTypeVideo)
+
+var VideoDownload = mediaFileDownload(videoBucketGetter, model.FileTypeVideo, fileDownloadRequestToHash)
