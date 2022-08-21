@@ -1,0 +1,76 @@
+syntax = "proto2";
+package gameinfo;
+
+option go_package = "retromanager/gameinfo";
+
+message GameExtInfo {
+    repeated string genre = 1; //
+    repeated string video = 2; //
+    repeated string image = 3; //
+    optional double rating = 4; //
+    optional string developer = 5; //
+    optional string publisher = 6; //
+    optional string releasedate = 7; //
+    optional uint32 players = 8; //
+}
+
+message GameInfo {
+    optional uint64 id = 1; //
+    optional uint32 platform = 2; //
+    optional string display_name = 3; //
+    optional string file_name = 4; //
+    optional uint64 file_size = 5; //
+    optional string desc = 6; //
+    optional uint64 create_time = 7; //
+    optional uint64 update_time = 8; //
+    optional string hash = 9; //
+    optional GameExtInfo extinfo = 10; //
+}
+
+message ListGameRequest {
+    optional uint32 platform = 1; //
+    optional uint32 offset = 2; //
+    optional uint32 limit = 3; //
+}
+
+message ListGameResponse {
+    repeated GameInfo list = 1; //
+    optional uint32 total = 2; //
+}
+
+message FilterSearch {
+    optional string field = 1; //
+    optional string value = 2; //
+}
+
+message RangeSearch {
+    optional string gte = 1; //
+    optional string lte = 2; //
+}
+
+message Page {
+    optional uint32 id = 1; //
+    optional uint32 size = 2; //
+}
+
+message OrderBy {
+    optional string field = 1; //
+    optional string order = 2; //
+}
+
+message CommonSearch {
+    repeated FilterSearch filters = 1; //
+    repeated RangeSearch ranges = 2; //
+    optional Page page = 3; //
+    optional OrderBy order_by = 4; //
+}
+
+message SearchGameRequest {
+    optional CommonSearch searcher = 1; 
+}
+
+message SearchGameResponse {
+    repeated GameInfo list = 1; //
+    optional uint32 total = 2; //
+
+}
