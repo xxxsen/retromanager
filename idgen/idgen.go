@@ -1,11 +1,12 @@
 package idgen
 
 import (
-	gen "github.com/yitter/idgenerator-go"
+	gen "github.com/yitter/idgenerator-go/idgen"
 )
 
 func Init(wrkid uint16) error {
-	gen.SetOptions(wrkid)
+	opt := gen.NewIdGeneratorOptions(wrkid)
+	gen.SetIdGenerator(opt)
 	return nil
 }
 

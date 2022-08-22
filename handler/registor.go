@@ -3,6 +3,7 @@ package handler
 import (
 	"retromanager/codec"
 	"retromanager/handler/file"
+	"retromanager/handler/file/bigfile"
 	"retromanager/handler/game"
 	"retromanager/proto/retromanager/gameinfo"
 
@@ -25,7 +26,10 @@ func OnRegist(router *gin.Engine) {
 		uploadRouter.POST("/image", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.ImageUpload))
 		uploadRouter.POST("/video", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.VideoUpload))
 		uploadRouter.POST("/rom", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.RomUpload))
-		//		bigFileRouter := uploadRouter.Group("/bigfile")
+		bigFileRouter := uploadRouter.Group("/bigfile")
+		bigFileRouter.POST("/begin", WrapHandler(&gameinfo.FileUploadBeginRequest{}, codec.JsonCodec, bigfile.Begin))
+		bigFileRouter.POST("/part", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), bigfile.Part))
+		bigFileRouter.POST("/end", WrapHandler(&gameinfo.FileUploadEndRequest{}, codec.JsonCodec, bigfile.End))
 
 	}
 	//download

@@ -95,12 +95,12 @@ func (c *s3Client) UploadPart(ctx context.Context, fileid string, uploadid strin
 	return &op, nil
 }
 
-func (c *s3Client) EndUpload(ctx context.Context, fileid string, uploadid string, parts []minio.CompletePart) (string, error) {
-	etag, err := c.core.CompleteMultipartUpload(ctx, c.c.bucket, fileid, uploadid, parts, minio.PutObjectOptions{})
+func (c *s3Client) EndUpload(ctx context.Context, fileid string, uploadid string, parts []minio.CompletePart) error {
+	_, err := c.core.CompleteMultipartUpload(ctx, c.c.bucket, fileid, uploadid, parts, minio.PutObjectOptions{})
 	if err != nil {
-		return "", errs.Wrap(constants.ErrS3, "finish upload fail", err)
+		return errs.Wrap(constants.ErrS3, "finish upload fail", err)
 	}
-	return etag, nil
+	return nil
 }
 
 func (c *s3Client) DiscardMultiPartUpload(ctx context.Context, fileid string, uploadid string) error {

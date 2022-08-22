@@ -52,6 +52,9 @@ type S3SmallFileUploader struct {
 }
 
 func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}) (*FileUploadMeta, bool, error) {
+	if err := ctx.Request.ParseMultipartForm(constants.MaxPostUploadSize); err != nil {
+		return nil, false, errs.Wrap(constants.ErrIO, "parse form fail", err)
+	}
 	file, header, err := ctx.Request.FormFile("file")
 	if err != nil {
 		return nil, false, errs.Wrap(constants.ErrParam, "get form file fail", err)

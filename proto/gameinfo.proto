@@ -114,29 +114,29 @@ message FileUploadBeginRequest {
 }
 
 message FileUploadBeginResponse {
-    optional string upload_id = 1; //refer: UploadIdCtx
+    optional string upload_ctx = 1; //refer: UploadIdCtx
     optional uint32 block_size = 2; //
 }
 
 message FileUploadPartResponse {
-    optional string part_id = 1; //refer: PartIdCtx
+    optional string part_ctx = 1; //refer: PartIdCtx
 }
 
 message FileUploadEndRequest {
-    optional uint64 file_size = 1; //
-    optional string upload_id = 2; //
-    repeated string part_ids = 3; //
-    optional string file_name = 4; //
+    optional string upload_ctx = 1; //
+    repeated string part_ctx = 2; //
+    optional string file_name = 3; //
+    optional string hash = 4; //
 }
 
 message FileUploadEndResponse {
-    optional string file_id = 1; //
+    optional string down_key = 1; //
 }
 
 message UploadIdCtx {
-    optional int64 file_size = 1; //
+    optional uint64 file_size = 1; //
     optional string upload_id = 2; //
-    optional string file_id = 3; //
+    optional string down_key = 3; //
     optional uint32 block_size = 4; //
 }
 
