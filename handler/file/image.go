@@ -1,31 +1,11 @@
 package file
 
 import (
-	"fmt"
-	"retromanager/constants"
-	"retromanager/errs"
-	"retromanager/handler/utils"
+	"retromanager/cache"
 	"retromanager/model"
-
-	"github.com/gin-gonic/gin"
 )
 
-func typeKey(typ uint32, hash string) string {
-	return fmt.Sprintf("%d:%s", typ, hash)
-}
+var imageCache, _ = cache.New(10000)
 
-var imageBucketGetter = func(ctx *gin.Context) string {
-	return utils.MustGetConfig(ctx).BucketInfo.ImageBucket
-}
-
-var ImageUpload = postUploader(constants.MaxPostUploadImageSize, imageBucketGetter, uint32(model.FileTypeImage))
-
-func fileDownloadRequestToHash(ctx *gin.Context, request interface{}) (string, error) {
-	req, ok := request.(*FileDownloadRequest)
-	if !ok {
-		return "", errs.New(constants.ErrServiceInternal, "invalid request type")
-	}
-	return req.FileId, nil
-}
-
-var ImageDownload = mediaFileDownload(imageBucketGetter, uint32(model.FileTypeImage), fileDownloadRequestToHash)
+var ImageUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeImage), imageCache))
+var ImageDownload = CommonFileDownload(NewFileDownloader(uint32(model.FileTypeImage), imageCache))

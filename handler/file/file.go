@@ -5,8 +5,8 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"mime"
-	"mime/multipart"
 	"net/http"
 	"path/filepath"
 	"retromanager/cache"
@@ -14,11 +14,11 @@ import (
 	"retromanager/constants"
 	"retromanager/dao"
 	"retromanager/errs"
-	"retromanager/handler/utils"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
 	"retromanager/s3"
 	"retromanager/server"
+	rutils "retromanager/utils"
 	"strconv"
 	"time"
 
@@ -27,130 +27,250 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-type FileDownloadRequest struct {
-	FileId string `schema:"file_id"`
+type FileUploadMeta struct {
+	Data      []byte
+	FileName  string
+	Dir       string
+	StoreName string
 }
 
-type bucketGetterFunc func(ctx *gin.Context) string
-type hashGetterFunc func(ctx *gin.Context, request interface{}) (string, error)
+type ISmallFileUploader interface {
+	BeforeUpload(ctx *gin.Context, request interface{}) (*FileUploadMeta, bool, error)
+	OnUpload(ctx *gin.Context, meta *FileUploadMeta) error
+	AfterUpload(ctx *gin.Context, realUpload bool, meta *FileUploadMeta) (interface{}, error)
+}
 
-func checkExistInDB(ctx context.Context, typ uint32, hash string) (bool, error) {
-	_, exist, err := getMediaTypeInfoFromDB(ctx, typ, hash)
+type S3SmallFileUploader struct {
+}
+
+func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}) (*FileUploadMeta, bool, error) {
+	file, header, err := ctx.Request.FormFile("file")
 	if err != nil {
-		return false, err
+		return nil, false, errs.Wrap(constants.ErrParam, "get form file fail", err)
 	}
-	return exist, nil
+	defer file.Close()
+	raw, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, false, errs.Wrap(constants.ErrIO, "read file data fail", err)
+	}
+	return &FileUploadMeta{
+		Data:      raw,
+		FileName:  header.Filename,
+		StoreName: rutils.CalcMd5(raw),
+	}, true, nil
+
+	return nil, false, nil
 }
 
-func postUploader(maxsize uint64, bucketGetter bucketGetterFunc, typ uint32) server.ProcessFunc {
-	return func(ctx *gin.Context, req interface{}) (int, errs.IError, interface{}) {
-		ctx.Request.ParseMultipartForm(int64(maxsize))
-		file, header, err := ctx.Request.FormFile("file")
-		if err != nil {
-			return http.StatusOK, errs.Wrap(constants.ErrParam, "get file fail", err), nil
-		}
-		raw, err := utils.ReadAndCloseFile(file)
-		if err != nil {
-			return http.StatusOK, errs.Wrap(constants.ErrIO, "read file", err), nil
-		}
-		filename := utils.CalcMd5(raw)
-		bucket := bucketGetter(ctx)
-
-		exist, err := checkExistInDB(ctx, typ, filename)
-		if err != nil {
-			return http.StatusOK, errs.Wrap(constants.ErrServiceInternal, "upload precheck fail", err), nil
-		}
-		if exist {
-			return http.StatusOK, nil, createPostUploadRsp(filename)
-		}
-		if err := s3.Client.Upload(ctx, bucket, filename, bytes.NewReader(raw), int64(len(raw))); err != nil {
-			return http.StatusOK, errs.Wrap(constants.ErrS3, "upload fail", err), nil
-		}
-		if err := writeTypeRecordToDB(ctx, typ, filename, header); err != nil {
-			return http.StatusOK, errs.Wrap(constants.ErrServiceInternal, "internal service err", err).WithDebugMsg("bucket:%s", bucket), nil
-		}
-		return http.StatusOK, nil, createPostUploadRsp(filename)
+func (f *S3SmallFileUploader) OnUpload(ctx *gin.Context, meta *FileUploadMeta) error {
+	if len(meta.Data) == 0 {
+		return errs.New(constants.ErrParam, "no file data")
 	}
-}
-
-func writeTypeRecordToDB(ctx context.Context, typ uint32, hash string, meta *multipart.FileHeader) error {
-	if _, err := dao.MediaInfoDao.CreateMedia(ctx, &model.CreateMediaRequest{
-		Item: &model.MediaItem{
-			FileName:   meta.Filename,
-			Hash:       hash,
-			FileSize:   uint64(meta.Size),
-			CreateTime: uint64(time.Now().UnixMilli()),
-			FileType:   typ,
-		},
-	}); err != nil {
-		return errs.Wrap(constants.ErrDatabase, "create record fail", err).
-			WithDebugMsg("typ:%d", typ).WithDebugMsg("hash:%s", hash)
+	if err := s3.Client.Upload(ctx, meta.StoreName, bytes.NewReader(meta.Data), int64(len(meta.Data))); err != nil {
+		return errs.Wrap(constants.ErrS3, "upload to s3 fail", err)
 	}
 	return nil
 }
 
-func createPostUploadRsp(fileid string) *gameinfo.ImageUploadResponse {
-	return &gameinfo.ImageUploadResponse{
-		FileId: proto.String(fileid),
+func (f *S3SmallFileUploader) AfterUpload(ctx *gin.Context, realUpload bool, meta *FileUploadMeta) (interface{}, error) {
+	return nil, nil
+}
+
+type FileDownloadMeta struct {
+	FileId      string
+	FileName    string
+	FileSize    int64
+	ContentType string
+}
+
+type IFileDownloader interface {
+	BeforeDownload(ctx *gin.Context, request interface{}) (*FileDownloadMeta, error)
+	OnDownload(ctx *gin.Context, meta *FileDownloadMeta) error
+	AfterDownload(ctx *gin.Context, meta *FileDownloadMeta, err error)
+}
+
+type S3FileDownloader struct {
+}
+
+func (f *S3FileDownloader) BeforeDownload(ctx *gin.Context, request interface{}) (*FileDownloadMeta, error) {
+	return nil, fmt.Errorf("need impl")
+}
+
+func (f *S3FileDownloader) OnDownload(ctx *gin.Context, meta *FileDownloadMeta) error {
+	reader, err := s3.Client.Download(ctx, meta.FileId)
+	if err != nil {
+		return errs.Wrap(constants.ErrS3, "create download stream fail", err)
+	}
+	defer reader.Close()
+	contentType := meta.ContentType
+	if len(contentType) == 0 {
+		contentType = mime.TypeByExtension(filepath.Ext(meta.FileName))
+	}
+	writer := ctx.Writer
+	writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", strconv.Quote(meta.FileName)))
+	writer.Header().Set("Content-Length", fmt.Sprintf("%d", meta.FileSize))
+	writer.Header().Set("Content-Type", contentType)
+	sz, err := io.Copy(ctx.Writer, reader)
+	if err != nil {
+		return errs.Wrap(constants.ErrIO, "copy stream fail", err)
+	}
+	if sz != int64(meta.FileSize) {
+		return errs.New(constants.ErrIO, "io size not match, need %d, write:%d", meta.FileSize, sz)
+	}
+	return nil
+}
+
+func (f *S3FileDownloader) AfterDownload(ctx *gin.Context, meta *FileDownloadMeta, err error) {
+	if err == nil {
+		return
+	}
+	log.Errorf("file download fail, path:%s, err:%v", ctx.Request.URL.Path, err)
+}
+
+func CommonFilePostUpload(uploader ISmallFileUploader) server.ProcessFunc {
+	return func(ctx *gin.Context, req interface{}) (int, errs.IError, interface{}) {
+		caller := func() (interface{}, errs.IError) {
+			meta, needUpload, err := uploader.BeforeUpload(ctx, req)
+			if err != nil {
+				return nil, errs.Wrap(constants.ErrServiceInternal, "before post upload fail", err)
+			}
+			if needUpload {
+				if err := uploader.OnUpload(ctx, meta); err != nil {
+					return nil, errs.Wrap(constants.ErrStorage, "on upload fail", err)
+				}
+			}
+			rsp, err := uploader.AfterUpload(ctx, needUpload, meta)
+			if err != nil {
+				return nil, errs.Wrap(constants.ErrServiceInternal, "after upload fail", err)
+			}
+			return rsp, nil
+		}
+		rsp, err := caller()
+		return http.StatusOK, err, rsp
 	}
 }
 
-func mediaFileDownload(bucketGetter bucketGetterFunc, typ uint32, hashGetter hashGetterFunc) server.ProcessFunc {
-	return func(ctx *gin.Context, req interface{}) (statuscode int, retErr errs.IError, response interface{}) {
-		defer func() {
-			if errs.IsErrOK(retErr) {
-				return
+func CommonFileDownload(downloader IFileDownloader) server.ProcessFunc {
+	return func(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
+		caller := func() error {
+			meta, err := downloader.BeforeDownload(ctx, request)
+			if err == nil {
+				err = downloader.OnDownload(ctx, meta)
 			}
-			codec.JsonCodec.Encode(ctx, statuscode, retErr, response)
-		}()
-
-		hash, err := hashGetter(ctx, req)
-		if err != nil {
-			return http.StatusOK, errs.Wrap(constants.ErrParam, "hash not found", err), nil
+			downloader.AfterDownload(ctx, meta, err)
+			if err != nil {
+				return err
+			}
+			return nil
 		}
-		meta, exist, err := getMediaTypeInfoFromDB(ctx, typ, hash)
-		if err != nil {
-			return http.StatusOK, errs.Wrap(constants.ErrDatabase, "get meta fail", err), nil
+		if err := caller(); err != nil {
+			e := errs.FromError(err)
+			log.Errorf("call file download fail, path:%s, err:%v", e)
+			codec.JsonCodec.Encode(ctx, http.StatusOK, e, nil)
 		}
-		if !exist {
-			return http.StatusOK, errs.New(constants.ErrNotFound, "not found"), nil
-		}
-		bucket := bucketGetter(ctx)
-		reader, err := s3.Client.Download(ctx, bucket, hash)
-		if err != nil {
-			return http.StatusOK, errs.Wrap(constants.ErrS3, "read stream fail", err), nil
-		}
-		defer reader.Close()
-		fileToDownload(ctx, reader, hash, meta.FileName, meta.FileSize)
 		return http.StatusOK, nil, nil
 	}
 }
 
-func fileToDownload(ctx *gin.Context, reader io.Reader, fileid string, name string, size uint64) {
-	writer := ctx.Writer
-	writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", strconv.Quote(name)))
-	writer.Header().Set("Content-Length", fmt.Sprintf("%d", size))
-	writer.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(name)))
-	sz, err := io.Copy(ctx.Writer, reader)
-	if err != nil || sz != int64(size) {
-		log.Errorf("write data to remote fail, path:%s, fileid:%s, sz:%d, err:%v", ctx.Request.URL.Path, fileid, sz, err)
+func cacheGetFileMeta(ctx context.Context, c *cache.Cache, key interface{},
+	cb func() (interface{}, bool, error)) (interface{}, bool, error) {
+
+	ival, exist, _ := c.Get(ctx, key)
+	if exist {
+		return ival, true, nil
+	}
+	val, exist, err := cb()
+	if err != nil {
+		return nil, false, err
+	}
+	if exist {
+		c.Set(ctx, key, val, 10*time.Minute)
+	}
+	return val, exist, nil
+}
+
+type FileUploader struct {
+	S3SmallFileUploader
+	typ uint32
+	c   *cache.Cache
+}
+
+func NewFileUploader(typ uint32, c *cache.Cache) *FileUploader {
+	return &FileUploader{
+		typ: typ,
+		c:   c,
 	}
 }
 
-func getMediaTypeInfoFromDB(ctx context.Context, typ uint32, hash string) (*model.MediaItem, bool, error) {
-	if val, exist, _ := cache.Default().Get(ctx, typeKey(typ, hash)); exist {
-		return val.(*model.MediaItem), true, nil
+func (uploader *FileUploader) BeforeUpload(ctx *gin.Context, request interface{}) (*FileUploadMeta, bool, error) {
+	meta, _, err := uploader.S3SmallFileUploader.BeforeUpload(ctx, request)
+	if err != nil {
+		return nil, false, err
 	}
-	val, exist, err := dao.MediaInfoDao.GetMedia(ctx, &model.GetMediaRequest{
-		Hash:     hash,
-		FileType: typ,
+	meta.StoreName = fmt.Sprintf("%d_%s", uploader.typ, meta.StoreName)
+	_, exist, _ := uploader.c.Get(ctx, meta.StoreName)
+	if exist {
+		return meta, false, nil
+	}
+	return meta, true, nil
+}
+
+func (uploader *FileUploader) AfterUpload(ctx *gin.Context, realUpload bool, meta *FileUploadMeta) (interface{}, error) {
+	if _, err := dao.MediaInfoDao.CreateMedia(ctx, &model.CreateMediaRequest{
+		Item: &model.MediaItem{
+			FileName:   meta.FileName,
+			Hash:       meta.StoreName,
+			FileSize:   uint64(len(meta.Data)),
+			CreateTime: uint64(time.Now().UnixMilli()),
+			FileType:   uploader.typ,
+		},
+	}); err != nil {
+		return nil, errs.Wrap(constants.ErrDatabase, "insert image to db fail", err)
+	}
+	return &gameinfo.ImageUploadResponse{
+		FileId: proto.String(meta.StoreName),
+	}, nil
+}
+
+type FileDownloader struct {
+	S3FileDownloader
+	typ uint32
+	c   *cache.Cache
+}
+
+func NewFileDownloader(typ uint32, c *cache.Cache) *FileDownloader {
+	return &FileDownloader{typ: typ, c: c}
+}
+
+func (d *FileDownloader) BeforeDownload(ctx *gin.Context, request interface{}) (*FileDownloadMeta, error) {
+	fileid := ctx.Request.URL.Query().Get("file_id")
+	if len(fileid) == 0 {
+		return nil, errs.New(constants.ErrParam, "no fileid found")
+	}
+
+	ifileinfo, exist, err := cacheGetFileMeta(ctx, d.c, fileid, func() (interface{}, bool, error) {
+		daoRsp, exist, err := dao.MediaInfoDao.GetMedia(ctx, &model.GetMediaRequest{
+			FileType: uint32(d.typ),
+			Hash:     fileid,
+		})
+		if err != nil {
+			return nil, false, err
+		}
+		if !exist {
+			return nil, false, nil
+		}
+		return daoRsp.Item, true, nil
 	})
 	if err != nil {
-		return nil, false, errs.Wrap(constants.ErrDatabase, "check db", err)
+		return nil, errs.Wrap(constants.ErrStorage, "cache get file meta fail", err).WithDebugMsg("type:%d", d.typ)
 	}
 	if !exist {
-		return nil, false, nil
+		return nil, errs.New(constants.ErrNotFound, "not found file meta").WithDebugMsg("filetype:%d", d.typ)
 	}
-	_ = cache.Default().Set(ctx, typeKey(typ, hash), val.Item, 0)
-	return val.Item, true, nil
+	fileinfo := ifileinfo.(*model.MediaItem)
+	return &FileDownloadMeta{
+		FileId:   fileid,
+		FileName: fileinfo.FileName,
+		FileSize: int64(fileinfo.FileSize),
+	}, nil
 }

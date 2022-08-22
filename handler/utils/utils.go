@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"retromanager/constants"
@@ -28,10 +26,4 @@ func ReadAndCloseFile(r io.ReadCloser) ([]byte, error) {
 		return nil, err
 	}
 	return raw, nil
-}
-
-func CalcMd5(raw []byte) string {
-	m := md5.New()
-	_, _ = m.Write(raw)
-	return hex.EncodeToString(m.Sum(nil))
 }

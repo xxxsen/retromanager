@@ -1,18 +1,11 @@
 package file
 
 import (
-	"retromanager/constants"
-	"retromanager/handler/utils"
+	"retromanager/cache"
 	"retromanager/model"
-
-	"github.com/gin-gonic/gin"
 )
 
-var videoBucketGetter = func(ctx *gin.Context) string {
-	return utils.MustGetConfig(ctx).BucketInfo.VideoBucket
-}
+var videoCache, _ = cache.New(10000)
 
-var VideoUpload = postUploader(constants.MaxPostUploadVideoSize,
-	videoBucketGetter, uint32(model.FileTypeVideo))
-
-var VideoDownload = mediaFileDownload(videoBucketGetter, uint32(model.FileTypeVideo), fileDownloadRequestToHash)
+var VideoUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeVideo), videoCache))
+var VideoDownload = CommonFileDownload(NewFileDownloader(uint32(model.FileTypeVideo), videoCache))

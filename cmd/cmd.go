@@ -56,11 +56,5 @@ func main() {
 }
 
 func initServiceConfig(c *config.Config) *hconfig.Config {
-	return &hconfig.Config{
-		BucketInfo: &hconfig.Bucket{
-			RomBucket:   c.S3Info.RomBucket,
-			ImageBucket: c.S3Info.ImageBucket,
-			VideoBucket: c.S3Info.VideoBucket,
-		},
-	}
+	return &hconfig.Config{}
 }

@@ -120,11 +120,12 @@ message FileUploadBeginRequest {
 }
 
 message FileUploadBeginResponse {
-    optional string upload_id = 1; //
+    optional string upload_id = 1; //refer: UploadIdCtx
+    optional uint32 block_size = 2; //
 }
 
 message FileUploadPartResponse {
-    optional string part_id = 1; //
+    optional string part_id = 1; //refer: PartIdCtx
 }
 
 message FileUploadEndRequest {
@@ -135,4 +136,16 @@ message FileUploadEndRequest {
 
 message FileUploadEndResponse {
     optional string file_id = 1; //
+}
+
+message UploadIdCtx {
+    optional int64 file_size = 1; //
+    optional string upload_id = 2; //
+    optional string file_id = 3; //
+    optional uint32 block_size = 4; //
+}
+
+message PartIdCtx {
+    optional int32 idx = 1; //
+    optional string etag = 2; //
 }

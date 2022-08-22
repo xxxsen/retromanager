@@ -24,11 +24,12 @@ func OnRegist(router *gin.Engine) {
 		uploadRouter := router.Group("/upload")
 		uploadRouter.POST("/image", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.ImageUpload))
 		uploadRouter.POST("/video", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.VideoUpload))
+		uploadRouter.POST("/rom", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.RomUpload))
 	}
 	//download
 	{
-		router.GET("/image", WrapHandler(&file.FileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.ImageDownload))
-		router.GET("/video", WrapHandler(&file.FileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.VideoDownload))
-		router.GET("/rom", WrapHandler(&file.GameDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.RomDownload))
+		router.GET("/image", WrapHandler(nil, codec.NopCodec, file.ImageDownload)) //input: file_id
+		router.GET("/video", WrapHandler(nil, codec.NopCodec, file.VideoDownload)) //input: file_id
+		router.GET("/rom", WrapHandler(nil, codec.NopCodec, file.RomDownload))     //input: file_id
 	}
 }

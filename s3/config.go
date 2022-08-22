@@ -5,6 +5,7 @@ type config struct {
 	secretKey string
 	ssl       bool
 	endpoint  string
+	bucket    string
 }
 
 type Option func(c *config)
@@ -25,5 +26,11 @@ func WithSSL(v bool) Option {
 func WithEndpoint(ep string) Option {
 	return func(c *config) {
 		c.endpoint = ep
+	}
+}
+
+func WithBucket(bk string) Option {
+	return func(c *config) {
+		c.bucket = bk
 	}
 }

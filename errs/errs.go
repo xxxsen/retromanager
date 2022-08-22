@@ -1,6 +1,9 @@
 package errs
 
-import "fmt"
+import (
+	"fmt"
+	"retromanager/constants"
+)
 
 var (
 	ErrOK = New(0, "success")
@@ -60,4 +63,14 @@ func IsErrOK(err IError) bool {
 		return true
 	}
 	return false
+}
+
+func FromError(err error) IError {
+	if err == nil {
+		return nil
+	}
+	if e, ok := err.(IError); ok {
+		return e
+	}
+	return Wrap(constants.ErrUnknown, "unknown error", err)
 }
