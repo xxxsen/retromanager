@@ -103,7 +103,7 @@ message FileUploadBeginResponse {
 }
 
 message FileUploadPartResponse {
-    optional string hash = 1;
+
 }
 
 message FileUploadEndRequest {

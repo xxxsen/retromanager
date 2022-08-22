@@ -1,11 +1,9 @@
 package file
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"net/http"
 	"path/filepath"
@@ -36,10 +34,11 @@ var RomUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeRom), 
 var FileDownload = CommonFileDownload(NewFileDownloader(fileCache))
 
 type FileUploadMeta struct {
-	Data     []byte
+	Reader   io.ReadSeekCloser
 	Hash     string
 	FileName string
 	DownKey  string
+	FileSize int64
 }
 
 type ISmallFileUploader interface {
@@ -52,30 +51,24 @@ type S3SmallFileUploader struct {
 }
 
 func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}) (*FileUploadMeta, bool, error) {
-	if err := ctx.Request.ParseMultipartForm(constants.MaxPostUploadSize); err != nil {
-		return nil, false, errs.Wrap(constants.ErrIO, "parse form fail", err)
-	}
 	file, header, err := ctx.Request.FormFile("file")
 	if err != nil {
 		return nil, false, errs.Wrap(constants.ErrParam, "get form file fail", err)
 	}
-	defer file.Close()
-	raw, err := ioutil.ReadAll(file)
-	if err != nil {
-		return nil, false, errs.Wrap(constants.ErrIO, "read file data fail", err)
+	if header.Size > constants.MaxPostUploadSize {
+		file.Close()
+		return nil, false, errs.New(constants.ErrParam, "file size out of limit")
 	}
 	return &FileUploadMeta{
-		Data:     raw,
+		Reader:   file,
 		FileName: header.Filename,
 		DownKey:  utils.EncodeFileId(uint64(idgen.NextId())),
+		FileSize: header.Size,
 	}, true, nil
 }
 
 func (f *S3SmallFileUploader) OnUpload(ctx *gin.Context, meta *FileUploadMeta) error {
-	if len(meta.Data) == 0 {
-		return errs.New(constants.ErrParam, "no file data")
-	}
-	if err := s3.Client.Upload(ctx, meta.DownKey, bytes.NewReader(meta.Data), int64(len(meta.Data))); err != nil {
+	if err := s3.Client.Upload(ctx, meta.DownKey, meta.Reader, meta.FileSize); err != nil {
 		return errs.Wrap(constants.ErrS3, "upload to s3 fail", err)
 	}
 	return nil
@@ -140,6 +133,11 @@ func CommonFilePostUpload(uploader ISmallFileUploader) server.ProcessFunc {
 	return func(ctx *gin.Context, req interface{}) (int, errs.IError, interface{}) {
 		caller := func() (interface{}, errs.IError) {
 			meta, needUpload, err := uploader.BeforeUpload(ctx, req)
+			defer func() {
+				if meta.Reader != nil {
+					meta.Reader.Close()
+				}
+			}()
 			if err != nil {
 				return nil, errs.Wrap(constants.ErrServiceInternal, "before post upload fail", err)
 			}
@@ -229,7 +227,7 @@ func (uploader *FileUploader) AfterUpload(ctx *gin.Context, realUpload bool, met
 		Item: &model.FileItem{
 			FileName:   meta.FileName,
 			Hash:       meta.Hash,
-			FileSize:   uint64(len(meta.Data)),
+			FileSize:   uint64(meta.FileSize),
 			CreateTime: uint64(time.Now().UnixMilli()),
 			DownKey:    meta.DownKey,
 		},

@@ -1,7 +1,6 @@
 package s3
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"net/http"
@@ -68,7 +67,7 @@ func (c *s3Client) Download(ctx context.Context, fileid string) (io.ReadCloser, 
 	return output.Body, nil
 }
 
-func (c *s3Client) Upload(ctx context.Context, fileid string, r io.Reader, sz int64) error {
+func (c *s3Client) Upload(ctx context.Context, fileid string, r io.ReadSeeker, sz int64) error {
 	uploader := s3manager.NewUploader(c.sess, func(u *s3manager.Uploader) {
 		u.PartSize = 2 * 1024 * 1024 // The minimum/default allowed part size is 5MB
 		u.Concurrency = 5            // default is 5
@@ -106,9 +105,9 @@ func (c *s3Client) BeginUpload(ctx context.Context, fileid string) (string, erro
 	return *output.UploadId, nil
 }
 
-func (c *s3Client) UploadPart(ctx context.Context, fileid string, uploadid string, partid int, data []byte) error {
+func (c *s3Client) UploadPart(ctx context.Context, fileid string, uploadid string, partid int, file io.ReadSeeker) error {
 	_, err := c.client.UploadPart(&s3.UploadPartInput{
-		Body:       bytes.NewReader(data),
+		Body:       file,
 		Bucket:     aws.String(c.c.bucket),
 		Key:        aws.String(fileid),
 		PartNumber: aws.Int64(int64(partid)),
