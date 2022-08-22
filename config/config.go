@@ -7,11 +7,11 @@ import (
 )
 
 type DBConfig struct {
-	Host string
-	Port uint32
-	User string
-	Pwd  string
-	DB   string
+	Host string `json:"host"`
+	Port uint32 `json:"port"`
+	User string `json:"user"`
+	Pwd  string `json:"pwd"`
+	DB   string `json:"db"`
 }
 
 type LogConfig struct {
@@ -32,7 +32,7 @@ type S3Config struct {
 }
 
 type ServerConfig struct {
-	Address string
+	Address string `json:"address"`
 }
 
 type IDGenConfig struct {
@@ -42,7 +42,7 @@ type IDGenConfig struct {
 type Config struct {
 	LogInfo    LogConfig    `json:"log_info"`
 	GameDBInfo DBConfig     `json:"game_db_info"`
-	FileDBInfo DBConfig     `json:"media_db_info"`
+	FileDBInfo DBConfig     `json:"file_db_info"`
 	ServerInfo ServerConfig `json:"server_info"`
 	S3Info     S3Config     `json:"s3_info"`
 	IDGenInfo  IDGenConfig  `json:"idgen_info"`

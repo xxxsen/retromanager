@@ -41,8 +41,9 @@ func main() {
 		s3.WithEndpoint(c.S3Info.Endpoint),
 		s3.WithSSL(c.S3Info.UseSSL),
 		s3.WithSecret(c.S3Info.SecretId, c.S3Info.SecretKey),
+		s3.WithBucket(c.S3Info.Bucket),
 	); err != nil {
-		log.Fatalf("init s3 fail, err:%w", err)
+		log.Fatalf("init s3 fail, err:%v", err)
 	}
 
 	//TODO: init es

@@ -38,35 +38,19 @@ message ListGameResponse {
     optional uint32 total = 2; //
 }
 
-message FilterSearch {
-    optional string field = 1; //
-    optional string value = 2; //
-}
-
-message RangeSearch {
-    optional string gte = 1; //
-    optional string lte = 2; //
-}
-
-message Page {
-    optional uint32 id = 1; //
-    optional uint32 size = 2; //
-}
-
-message OrderBy {
-    optional string field = 1; //
-    optional string order = 2; //
-}
-
-message CommonSearch {
-    repeated FilterSearch filters = 1; //
-    repeated RangeSearch ranges = 2; //
-    optional Page page = 3; //
-    optional OrderBy order_by = 4; //
+message SearchParam {
+    optional uint64 game_id = 1; //
+    optional uint32 platform = 2; //
+    optional uint64 ctime_gte = 3; //
+    optional uint64 ctime_lte = 4; //
+    optional string desc = 5; //
+    optional string display_name = 6; // 
 }
 
 message SearchGameRequest {
-    optional CommonSearch searcher = 1; 
+    optional SearchParam param = 1; //
+    optional uint32 offset = 2; //
+    optional uint32 limit = 3; //
 }
 
 message SearchGameResponse {
