@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"retromanager/constants"
 	"retromanager/errs"
@@ -13,12 +12,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 var Client *s3Client
 
 type s3Client struct {
 	c      *config
+	sess   *session.Session
 	client *s3.S3
 }
 
@@ -43,14 +44,17 @@ func New(opts ...Option) (*s3Client, error) {
 	}
 
 	credit := credentials.NewStaticCredentials(c.secretId, c.secretKey, "")
-	client := s3.New(session.Must(session.NewSession()), &aws.Config{
+	sess, err := session.NewSession(&aws.Config{
 		Credentials: credit,
 		Endpoint:    aws.String(c.endpoint),
 		DisableSSL:  aws.Bool(!c.ssl),
 		HTTPClient:  &http.Client{},
 	})
-
-	return &s3Client{c: c, client: client}, nil
+	if err != nil {
+		return nil, errs.Wrap(constants.ErrS3, "init session fail", err)
+	}
+	client := s3.New(sess)
+	return &s3Client{c: c, client: client, sess: sess}, nil
 }
 
 func (c *s3Client) Download(ctx context.Context, fileid string) (io.ReadCloser, error) {
@@ -65,14 +69,14 @@ func (c *s3Client) Download(ctx context.Context, fileid string) (io.ReadCloser, 
 }
 
 func (c *s3Client) Upload(ctx context.Context, fileid string, r io.Reader, sz int64) error {
-	raw, err := ioutil.ReadAll(r)
-	if err != nil {
-		return errs.Wrap(constants.ErrIO, "read data fail", err)
-	}
-	_, err = c.client.PutObject(&s3.PutObjectInput{
-		Body:   bytes.NewReader(raw),
+	uploader := s3manager.NewUploader(c.sess, func(u *s3manager.Uploader) {
+		u.PartSize = 2 * 1024 * 1024 // The minimum/default allowed part size is 5MB
+		u.Concurrency = 5            // default is 5
+	})
+	_, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(c.c.bucket),
 		Key:    aws.String(fileid),
+		Body:   r,
 	})
 	if err != nil {
 		return errs.Wrap(constants.ErrS3, "write obj fail", err)
