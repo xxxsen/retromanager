@@ -22,11 +22,11 @@ func ModifyGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 		Modify: &model.ModifyInfo{
 			Platform:    req.Item.Platform,
 			DisplayName: req.Item.DisplayName,
-			FileName:    req.Item.FileName,
 			FileSize:    req.Item.FileSize,
 			Hash:        req.Item.Hash,
 			Desc:        req.Item.Desc,
 			ExtInfo:     nil,
+			DownKey:     req.Item.DownKey,
 		},
 	}
 	if req.Item.Extinfo != nil {

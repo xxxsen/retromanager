@@ -53,7 +53,6 @@ type GameItem struct {
 	ID          uint64
 	Platform    uint32
 	DisplayName string
-	FileName    string
 	FileSize    uint64
 	Desc        string
 	CreateTime  uint64
@@ -68,7 +67,6 @@ func (item *GameItem) ToPBItem() (*gameinfo.GameInfo, error) {
 		Id:          proto.Uint64(item.ID),
 		Platform:    proto.Uint32(item.Platform),
 		DisplayName: proto.String(item.DisplayName),
-		FileName:    proto.String(item.FileName),
 		FileSize:    proto.Uint64(item.FileSize),
 		Desc:        proto.String(item.Desc),
 		CreateTime:  proto.Uint64(item.CreateTime),
@@ -94,11 +92,11 @@ type CreateGameResponse struct {
 type ModifyInfo struct {
 	Platform    *uint32
 	DisplayName *string
-	FileName    *string
 	FileSize    *uint64
 	Hash        *string
 	Desc        *string
 	ExtInfo     []byte
+	DownKey     *string
 }
 
 type ModifyGameRequest struct {

@@ -22,9 +22,6 @@ func checkCreate(req *gameinfo.CreateGameRequest) error {
 	if len(item.GetDesc()) == 0 {
 		return fmt.Errorf("nil desc")
 	}
-	if len(item.GetFileName()) == 0 {
-		return fmt.Errorf("nil filename")
-	}
 	if len(item.GetDisplayName()) == 0 {
 		return fmt.Errorf("nil display name")
 	}
@@ -61,7 +58,6 @@ func CreateGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 		Item: &model.GameItem{
 			Platform:    item.GetPlatform(),
 			DisplayName: item.GetDisplayName(),
-			FileName:    item.GetFileName(),
 			FileSize:    item.GetFileSize(),
 			Desc:        item.GetDesc(),
 			CreateTime:  now,

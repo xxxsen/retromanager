@@ -14,7 +14,7 @@ import (
 )
 
 var gameinfoFields = []string{
-	"id", "platform", "display_name", "file_name", "file_size", "desc", "create_time", "update_time", "hash", "extinfo", "down_key",
+	"id", "platform", "display_name", "file_size", "desc", "create_time", "update_time", "hash", "extinfo", "down_key",
 }
 
 var GameInfoDao = NewGameInfoDao()
@@ -120,8 +120,7 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 	lst := make([]*model.GameItem, 0, req.Limit)
 	for rows.Next() {
 		item := &model.GameItem{}
-		if err := rows.Scan(&item.ID, &item.Platform, &item.DisplayName,
-			&item.FileName, &item.FileSize, &item.Desc, &item.CreateTime,
+		if err := rows.Scan(&item.ID, &item.Platform, &item.DisplayName, &item.FileSize, &item.Desc, &item.CreateTime,
 			&item.UpdateTime, &item.Hash, &item.ExtInfo, &item.DownKey); err != nil {
 
 			return nil, errs.Wrap(constants.ErrDatabase, "scan", err)
@@ -148,7 +147,6 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 			"id":           item.ID,
 			"platform":     item.Platform,
 			"display_name": item.DisplayName,
-			"file_name":    item.FileName,
 			"desc":         item.Desc,
 			"create_time":  item.CreateTime,
 			"update_time":  item.UpdateTime,
@@ -191,9 +189,6 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 	if req.Modify.ExtInfo != nil {
 		update["extinfo"] = req.Modify.ExtInfo
 	}
-	if req.Modify.FileName != nil {
-		update["file_name"] = *req.Modify.FileName
-	}
 	if req.Modify.FileSize != nil {
 		update["file_size"] = *req.Modify.FileSize
 	}
@@ -202,6 +197,9 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 	}
 	if req.Modify.Platform != nil {
 		update["platform"] = *req.Modify.Platform
+	}
+	if req.Modify.DownKey != nil {
+		update["down_key"] = *req.Modify.DownKey
 	}
 	sql, args, err := builder.BuildUpdate(d.Table(), where, update)
 	if err != nil {

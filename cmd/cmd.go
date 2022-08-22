@@ -7,6 +7,7 @@ import (
 	"retromanager/db"
 	"retromanager/handler"
 	hconfig "retromanager/handler/config"
+	"retromanager/idgen"
 	"retromanager/s3"
 	"retromanager/server"
 
@@ -30,8 +31,11 @@ func main() {
 	if err := db.InitGameDB(&c.GameDBInfo); err != nil {
 		log.Fatalf("init game db fail, err:%v", err)
 	}
-	if err := db.InitMediaDB(&c.MediaDBInfo); err != nil {
+	if err := db.InitFileDB(&c.FileDBInfo); err != nil {
 		log.Fatalf("init media db fail, err:%v", err)
+	}
+	if err := idgen.Init(c.IDGenInfo.WorkerID); err != nil {
+		log.Fatalf("init idgen fail, err:%v", err)
 	}
 	if err := s3.InitGlobal(
 		s3.WithEndpoint(c.S3Info.Endpoint),

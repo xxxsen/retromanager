@@ -35,7 +35,7 @@ func buildSqlDataSource(c *config.DBConfig) string {
 	return fmt.Sprintf("%s:%s@%s(%s:%d)/%s?charset=utf8mb4", c.User, c.Pwd, "tcp", c.Host, c.Port, c.DB)
 }
 
-func InitMediaDB(c *config.DBConfig) error {
+func InitFileDB(c *config.DBConfig) error {
 	client, err := sql.Open("mysql", buildSqlDataSource(c))
 	if err != nil {
 		return errs.Wrap(constants.ErrDatabase, "open db fail", err)

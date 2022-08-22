@@ -12,38 +12,37 @@ import (
 )
 
 var (
-	mediaDBFields = []string{
-		"id", "file_name", "hash", "file_size", "create_time", "file_type",
+	fileDBFields = []string{
+		"id", "file_name", "hash", "file_size", "create_time", "down_key",
 	}
 )
 
-var MediaInfoDao = &mediaInfoDaoImpl{}
+var FileInfoDao FileInfoService = &fileInfoDaoImpl{}
 
-type MediaInfoSerice interface {
-	GetMedia(ctx context.Context, req *model.GetMediaRequest) (*model.GetMediaResponse, bool, error)
-	CreateMedia(ctx context.Context, req *model.CreateMediaRequest) (*model.CreateMediaResponse, error)
+type FileInfoService interface {
+	GetFile(ctx context.Context, req *model.GetFileRequest) (*model.GetFileResponse, bool, error)
+	CreateFile(ctx context.Context, req *model.CreateFileRequest) (*model.CreateFileResponse, error)
 }
 
-type mediaInfoDaoImpl struct {
+type fileInfoDaoImpl struct {
 }
 
-func (d *mediaInfoDaoImpl) Table() string {
-	return "media_info_tab"
+func (d *fileInfoDaoImpl) Table() string {
+	return "file_info_tab"
 }
 
-func (d *mediaInfoDaoImpl) Client() *sql.DB {
+func (d *fileInfoDaoImpl) Client() *sql.DB {
 	return db.GetMediaDB()
 }
 
-func (d *mediaInfoDaoImpl) Fields() []string {
-	return mediaDBFields
+func (d *fileInfoDaoImpl) Fields() []string {
+	return fileDBFields
 }
 
-func (d *mediaInfoDaoImpl) GetMedia(ctx context.Context, req *model.GetMediaRequest) (*model.GetMediaResponse, bool, error) {
+func (d *fileInfoDaoImpl) GetFile(ctx context.Context, req *model.GetFileRequest) (*model.GetFileResponse, bool, error) {
 	where := map[string]interface{}{
-		"hash":      req.Hash,
-		"file_type": req.FileType,
-		"_limit":    []uint{0, 1},
+		"down_key": req.DownKey,
+		"_limit":   []uint{0, 1},
 	}
 	sql, args, err := builder.BuildSelect(d.Table(), where, d.Fields())
 	if err != nil {
@@ -54,12 +53,12 @@ func (d *mediaInfoDaoImpl) GetMedia(ctx context.Context, req *model.GetMediaRequ
 		return nil, false, errs.Wrap(constants.ErrDatabase, "select fail", err)
 	}
 	defer rows.Close()
-	var item *model.MediaItem
+	var item *model.FileItem
 	for rows.Next() {
-		item = &model.MediaItem{}
+		item = &model.FileItem{}
 		if err := rows.Scan(&item.Id, &item.FileName,
 			&item.Hash, &item.FileSize, &item.CreateTime,
-			&item.FileType); err != nil {
+			&item.DownKey); err != nil {
 
 			return nil, false, errs.Wrap(constants.ErrDatabase, "scan fail", err)
 		}
@@ -70,17 +69,17 @@ func (d *mediaInfoDaoImpl) GetMedia(ctx context.Context, req *model.GetMediaRequ
 	if item == nil {
 		return nil, false, nil
 	}
-	return &model.GetMediaResponse{Item: item}, true, nil
+	return &model.GetFileResponse{Item: item}, true, nil
 }
 
-func (d *mediaInfoDaoImpl) CreateMedia(ctx context.Context, req *model.CreateMediaRequest) (*model.CreateMediaResponse, error) {
+func (d *fileInfoDaoImpl) CreateFile(ctx context.Context, req *model.CreateFileRequest) (*model.CreateFileResponse, error) {
 	data := []map[string]interface{}{
 		{
 			"file_name":   req.Item.FileName,
 			"hash":        req.Item.Hash,
 			"file_size":   req.Item.FileSize,
 			"create_time": req.Item.CreateTime,
-			"file_type":   req.Item.FileType,
+			"down_key":    req.Item.DownKey,
 		},
 	}
 	sql, args, err := builder.BuildInsertIgnore(d.Table(), data)
@@ -91,5 +90,5 @@ func (d *mediaInfoDaoImpl) CreateMedia(ctx context.Context, req *model.CreateMed
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrDatabase, "insert fail", err)
 	}
-	return &model.CreateMediaResponse{}, nil
+	return &model.CreateFileResponse{}, nil
 }

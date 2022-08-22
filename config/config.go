@@ -35,12 +35,17 @@ type ServerConfig struct {
 	Address string
 }
 
+type IDGenConfig struct {
+	WorkerID uint16 `json:"worker_id"`
+}
+
 type Config struct {
-	LogInfo     LogConfig    `json:"log_info"`
-	GameDBInfo  DBConfig     `json:"game_db_info"`
-	MediaDBInfo DBConfig     `json:"media_db_info"`
-	ServerInfo  ServerConfig `json:"server_info"`
-	S3Info      S3Config     `json:"s3_info"`
+	LogInfo    LogConfig    `json:"log_info"`
+	GameDBInfo DBConfig     `json:"game_db_info"`
+	FileDBInfo DBConfig     `json:"media_db_info"`
+	ServerInfo ServerConfig `json:"server_info"`
+	S3Info     S3Config     `json:"s3_info"`
+	IDGenInfo  IDGenConfig  `json:"idgen_info"`
 }
 
 func Parse(f string) (*Config, error) {

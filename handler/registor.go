@@ -25,11 +25,11 @@ func OnRegist(router *gin.Engine) {
 		uploadRouter.POST("/image", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.ImageUpload))
 		uploadRouter.POST("/video", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.VideoUpload))
 		uploadRouter.POST("/rom", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.RomUpload))
+		//		bigFileRouter := uploadRouter.Group("/bigfile")
+
 	}
 	//download
 	{
-		router.GET("/image", WrapHandler(nil, codec.NopCodec, file.ImageDownload)) //input: file_id
-		router.GET("/video", WrapHandler(nil, codec.NopCodec, file.VideoDownload)) //input: file_id
-		router.GET("/rom", WrapHandler(nil, codec.NopCodec, file.RomDownload))     //input: file_id
+		router.GET("/file", WrapHandler(nil, codec.NopCodec, file.FileDownload)) //input: down_key
 	}
 }

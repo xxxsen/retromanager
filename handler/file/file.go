@@ -18,20 +18,28 @@ import (
 	"retromanager/proto/retromanager/gameinfo"
 	"retromanager/s3"
 	"retromanager/server"
-	rutils "retromanager/utils"
+	"retromanager/utils"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xxxsen/log"
+	"github.com/yitter/idgenerator-go/idgen"
 	"google.golang.org/protobuf/proto"
 )
 
+var fileCache, _ = cache.New(20000)
+
+var ImageUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeImage), fileCache))
+var VideoUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeVideo), fileCache))
+var RomUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeRom), fileCache))
+var FileDownload = CommonFileDownload(NewFileDownloader(fileCache))
+
 type FileUploadMeta struct {
-	Data      []byte
-	FileName  string
-	Dir       string
-	StoreName string
+	Data     []byte
+	Hash     string
+	FileName string
+	DownKey  string
 }
 
 type ISmallFileUploader interface {
@@ -54,19 +62,17 @@ func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 		return nil, false, errs.Wrap(constants.ErrIO, "read file data fail", err)
 	}
 	return &FileUploadMeta{
-		Data:      raw,
-		FileName:  header.Filename,
-		StoreName: rutils.CalcMd5(raw),
+		Data:     raw,
+		FileName: header.Filename,
+		DownKey:  utils.EncodeFileId(uint64(idgen.NextId())),
 	}, true, nil
-
-	return nil, false, nil
 }
 
 func (f *S3SmallFileUploader) OnUpload(ctx *gin.Context, meta *FileUploadMeta) error {
 	if len(meta.Data) == 0 {
 		return errs.New(constants.ErrParam, "no file data")
 	}
-	if err := s3.Client.Upload(ctx, meta.StoreName, bytes.NewReader(meta.Data), int64(len(meta.Data))); err != nil {
+	if err := s3.Client.Upload(ctx, meta.DownKey, bytes.NewReader(meta.Data), int64(len(meta.Data))); err != nil {
 		return errs.Wrap(constants.ErrS3, "upload to s3 fail", err)
 	}
 	return nil
@@ -77,7 +83,7 @@ func (f *S3SmallFileUploader) AfterUpload(ctx *gin.Context, realUpload bool, met
 }
 
 type FileDownloadMeta struct {
-	FileId      string
+	DownKey     string
 	FileName    string
 	FileSize    int64
 	ContentType string
@@ -97,7 +103,7 @@ func (f *S3FileDownloader) BeforeDownload(ctx *gin.Context, request interface{})
 }
 
 func (f *S3FileDownloader) OnDownload(ctx *gin.Context, meta *FileDownloadMeta) error {
-	reader, err := s3.Client.Download(ctx, meta.FileId)
+	reader, err := s3.Client.Download(ctx, meta.DownKey)
 	if err != nil {
 		return errs.Wrap(constants.ErrS3, "create download stream fail", err)
 	}
@@ -207,8 +213,8 @@ func (uploader *FileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 	if err != nil {
 		return nil, false, err
 	}
-	meta.StoreName = fmt.Sprintf("%d_%s", uploader.typ, meta.StoreName)
-	_, exist, _ := uploader.c.Get(ctx, meta.StoreName)
+	meta.DownKey = fmt.Sprintf("%d_%s", uploader.typ, meta.DownKey)
+	_, exist, _ := uploader.c.Get(ctx, meta.DownKey)
 	if exist {
 		return meta, false, nil
 	}
@@ -216,42 +222,40 @@ func (uploader *FileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 }
 
 func (uploader *FileUploader) AfterUpload(ctx *gin.Context, realUpload bool, meta *FileUploadMeta) (interface{}, error) {
-	if _, err := dao.MediaInfoDao.CreateMedia(ctx, &model.CreateMediaRequest{
-		Item: &model.MediaItem{
+	if _, err := dao.FileInfoDao.CreateFile(ctx, &model.CreateFileRequest{
+		Item: &model.FileItem{
 			FileName:   meta.FileName,
-			Hash:       meta.StoreName,
+			Hash:       meta.Hash,
 			FileSize:   uint64(len(meta.Data)),
 			CreateTime: uint64(time.Now().UnixMilli()),
-			FileType:   uploader.typ,
+			DownKey:    meta.DownKey,
 		},
 	}); err != nil {
 		return nil, errs.Wrap(constants.ErrDatabase, "insert image to db fail", err)
 	}
-	return &gameinfo.ImageUploadResponse{
-		FileId: proto.String(meta.StoreName),
+	return &gameinfo.FileUploadResponse{
+		DownKey: proto.String(meta.DownKey),
 	}, nil
 }
 
 type FileDownloader struct {
 	S3FileDownloader
-	typ uint32
-	c   *cache.Cache
+	c *cache.Cache
 }
 
-func NewFileDownloader(typ uint32, c *cache.Cache) *FileDownloader {
-	return &FileDownloader{typ: typ, c: c}
+func NewFileDownloader(c *cache.Cache) *FileDownloader {
+	return &FileDownloader{c: c}
 }
 
 func (d *FileDownloader) BeforeDownload(ctx *gin.Context, request interface{}) (*FileDownloadMeta, error) {
-	fileid := ctx.Request.URL.Query().Get("file_id")
-	if len(fileid) == 0 {
+	downKey := ctx.Request.URL.Query().Get("down_key")
+	if len(downKey) == 0 {
 		return nil, errs.New(constants.ErrParam, "no fileid found")
 	}
 
-	ifileinfo, exist, err := cacheGetFileMeta(ctx, d.c, fileid, func() (interface{}, bool, error) {
-		daoRsp, exist, err := dao.MediaInfoDao.GetMedia(ctx, &model.GetMediaRequest{
-			FileType: uint32(d.typ),
-			Hash:     fileid,
+	ifileinfo, exist, err := cacheGetFileMeta(ctx, d.c, downKey, func() (interface{}, bool, error) {
+		daoRsp, exist, err := dao.FileInfoDao.GetFile(ctx, &model.GetFileRequest{
+			DownKey: downKey,
 		})
 		if err != nil {
 			return nil, false, err
@@ -262,14 +266,14 @@ func (d *FileDownloader) BeforeDownload(ctx *gin.Context, request interface{}) (
 		return daoRsp.Item, true, nil
 	})
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrStorage, "cache get file meta fail", err).WithDebugMsg("type:%d", d.typ)
+		return nil, errs.Wrap(constants.ErrStorage, "cache get file meta fail", err)
 	}
 	if !exist {
-		return nil, errs.New(constants.ErrNotFound, "not found file meta").WithDebugMsg("filetype:%d", d.typ)
+		return nil, errs.New(constants.ErrNotFound, "not found file meta")
 	}
-	fileinfo := ifileinfo.(*model.MediaItem)
+	fileinfo := ifileinfo.(*model.FileItem)
 	return &FileDownloadMeta{
-		FileId:   fileid,
+		DownKey:  downKey,
 		FileName: fileinfo.FileName,
 		FileSize: int64(fileinfo.FileSize),
 	}, nil

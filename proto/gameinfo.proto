@@ -18,14 +18,13 @@ message GameInfo {
     optional uint64 id = 1; //
     optional uint32 platform = 2; //
     optional string display_name = 3; //
-    optional string file_name = 4; //
-    optional uint64 file_size = 5; //
-    optional string desc = 6; //
-    optional uint64 create_time = 7; //
-    optional uint64 update_time = 8; //
-    optional string hash = 9; //
-    optional GameExtInfo extinfo = 10; //
-    optional string down_key = 11; //
+    optional uint64 file_size = 4; //
+    optional string desc = 5; //
+    optional uint64 create_time = 6; //
+    optional uint64 update_time = 7; //
+    optional string hash = 8; //
+    optional GameExtInfo extinfo = 9; //
+    optional string down_key = 10; //
 }
 
 message ListGameRequest {
@@ -86,11 +85,11 @@ message CreateGameResponse {
 message ModifyItem {
     optional uint32 platform = 1; //
     optional string display_name = 2; //
-    optional string file_name = 3; //
-    optional uint64 file_size = 4; //
-    optional string desc = 5; //
-    optional string hash = 6; //
-    optional GameExtInfo extinfo = 7; //
+    optional uint64 file_size = 3; //
+    optional string desc = 4; //
+    optional string hash = 5; //
+    optional GameExtInfo extinfo = 6; //
+    optional string down_key = 7;
 }
 
 message ModifyGameRequest {
@@ -106,17 +105,12 @@ message DeleteGameResponse {
 
 }
 
-message ImageUploadResponse {
-    optional string file_id = 1; //
-}
-
-message VideoUploadResponse {
-    optional string file_id = 1; //
+message FileUploadResponse {
+    optional string down_key = 1; //
 }
 
 message FileUploadBeginRequest {
     optional uint64 file_size = 1; //
-    optional string hash = 2; //
 }
 
 message FileUploadBeginResponse {
@@ -132,6 +126,7 @@ message FileUploadEndRequest {
     optional uint64 file_size = 1; //
     optional string upload_id = 2; //
     repeated string part_ids = 3; //
+    optional string file_name = 4; //
 }
 
 message FileUploadEndResponse {
