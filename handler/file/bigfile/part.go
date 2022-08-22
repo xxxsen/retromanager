@@ -47,19 +47,11 @@ func Part(ctx *gin.Context, request interface{}) (int, errs.IError, interface{})
 	if err != nil {
 		return http.StatusOK, errs.Wrap(constants.ErrIO, "read file fail", err), nil
 	}
-	part, err := s3.Client.UploadPart(ctx, uploadctx.GetDownKey(), uploadctx.GetUploadId(), int(partid), raw)
+	err = s3.Client.UploadPart(ctx, uploadctx.GetDownKey(), uploadctx.GetUploadId(), int(partid), raw)
 	if err != nil {
 		return http.StatusOK, errs.Wrap(constants.ErrS3, "upload part fail", err), nil
 	}
-	partidctx := &gameinfo.PartIdCtx{
-		Idx:  proto.Int32(int32(part.PartNumber)),
-		Etag: proto.String(part.ETag),
-	}
-	partctx, err := utils.EncodePartID(partidctx)
-	if err != nil {
-		return http.StatusOK, errs.Wrap(constants.ErrMarshal, "build partid fail", err), nil
-	}
 	return http.StatusOK, nil, &gameinfo.FileUploadPartResponse{
-		PartCtx: proto.String(partctx),
+		Hash: proto.String(utils.CalcMd5(raw)),
 	}
 }

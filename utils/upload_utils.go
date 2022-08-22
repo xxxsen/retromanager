@@ -21,18 +21,6 @@ func DecodeUploadID(id string) (*gameinfo.UploadIdCtx, error) {
 	return ctx, nil
 }
 
-func EncodePartID(part *gameinfo.PartIdCtx) (string, error) {
-	return encodeMessage(part)
-}
-
-func DecodePartID(id string) (*gameinfo.PartIdCtx, error) {
-	part := &gameinfo.PartIdCtx{}
-	if err := decodeMessage(id, part); err != nil {
-		return nil, err
-	}
-	return part, nil
-}
-
 func encodeMessage(msg proto.Message) (string, error) {
 	raw, err := proto.Marshal(msg)
 	if err != nil {

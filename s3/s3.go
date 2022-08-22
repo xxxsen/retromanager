@@ -4,20 +4,22 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"retromanager/constants"
 	"retromanager/errs"
-	"retromanager/utils"
 
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 var Client *s3Client
 
 type s3Client struct {
 	c      *config
-	client *minio.Client
-	core   *minio.Core
+	client *s3.S3
 }
 
 func InitGlobal(opts ...Option) error {
@@ -39,34 +41,39 @@ func New(opts ...Option) (*s3Client, error) {
 	if len(c.bucket) == 0 {
 		return nil, errs.New(constants.ErrParam, "nil bucket name")
 	}
-	client, err := minio.New(c.endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(c.secretId, c.secretKey, ""),
-		Secure: true,
-	})
-	if err != nil {
-		return nil, errs.Wrap(constants.ErrS3, "init client fail", err)
-	}
 
-	core, err := minio.NewCore(c.endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(c.secretId, c.secretKey, ""),
-		Secure: true,
+	credit := credentials.NewStaticCredentials(c.secretId, c.secretKey, "")
+	client := s3.New(session.Must(session.NewSession()), &aws.Config{
+		Credentials: credit,
+		Endpoint:    aws.String(c.endpoint),
+		DisableSSL:  aws.Bool(!c.ssl),
+		HTTPClient:  &http.Client{},
 	})
-	if err != nil {
-		return nil, errs.Wrap(constants.ErrS3, "init core fail", err)
-	}
-	return &s3Client{c: c, client: client, core: core}, nil
+
+	return &s3Client{c: c, client: client}, nil
 }
 
 func (c *s3Client) Download(ctx context.Context, fileid string) (io.ReadCloser, error) {
-	reader, err := c.client.GetObject(ctx, c.c.bucket, fileid, minio.GetObjectOptions{})
+	output, err := c.client.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String(c.c.bucket),
+		Key:    aws.String(fileid),
+	})
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrS3, "get obj fail", err)
 	}
-	return reader, nil
+	return output.Body, nil
 }
 
 func (c *s3Client) Upload(ctx context.Context, fileid string, r io.Reader, sz int64) error {
-	_, err := c.client.PutObject(ctx, c.c.bucket, fileid, r, sz, minio.PutObjectOptions{})
+	raw, err := ioutil.ReadAll(r)
+	if err != nil {
+		return errs.Wrap(constants.ErrIO, "read data fail", err)
+	}
+	_, err = c.client.PutObject(&s3.PutObjectInput{
+		Body:   bytes.NewReader(raw),
+		Bucket: aws.String(c.c.bucket),
+		Key:    aws.String(fileid),
+	})
 	if err != nil {
 		return errs.Wrap(constants.ErrS3, "write obj fail", err)
 	}
@@ -74,29 +81,85 @@ func (c *s3Client) Upload(ctx context.Context, fileid string, r io.Reader, sz in
 }
 
 func (c *s3Client) Remove(ctx context.Context, fileid string) error {
-	return c.client.RemoveObject(ctx, c.c.bucket, fileid, minio.RemoveObjectOptions{})
+	_, err := c.client.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(c.c.bucket),
+		Key:    aws.String(fileid),
+	})
+	if err != nil {
+		return errs.Wrap(constants.ErrS3, "delete fail", err)
+	}
+	return nil
 }
 
 func (c *s3Client) BeginUpload(ctx context.Context, fileid string) (string, error) {
-	uploadid, err := c.core.NewMultipartUpload(ctx, c.c.bucket, fileid, minio.PutObjectOptions{})
+	output, err := c.client.CreateMultipartUpload(&s3.CreateMultipartUploadInput{
+		Bucket: aws.String(c.c.bucket),
+		Key:    aws.String(fileid),
+	})
 	if err != nil {
 		return "", errs.Wrap(constants.ErrS3, "create multi part upload fail", err)
 	}
-	return uploadid, nil
+	return *output.UploadId, nil
 }
 
-func (c *s3Client) UploadPart(ctx context.Context, fileid string, uploadid string, partid int, data []byte) (*minio.ObjectPart, error) {
-	md5base64 := utils.CalcMd5Base64(data)
-	sha256hex := utils.CalcSha256Hex(data)
-	op, err := c.core.PutObjectPart(ctx, c.c.bucket, fileid, uploadid, partid, bytes.NewReader(data), int64(len(data)), md5base64, sha256hex, nil)
+func (c *s3Client) UploadPart(ctx context.Context, fileid string, uploadid string, partid int, data []byte) error {
+	_, err := c.client.UploadPart(&s3.UploadPartInput{
+		Body:       bytes.NewReader(data),
+		Bucket:     aws.String(c.c.bucket),
+		Key:        aws.String(fileid),
+		PartNumber: aws.Int64(int64(partid)),
+		UploadId:   aws.String(uploadid),
+	})
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrS3, "put part fail", err)
+		return errs.Wrap(constants.ErrS3, "put part fail", err)
 	}
-	return &op, nil
+	return nil
 }
 
-func (c *s3Client) EndUpload(ctx context.Context, fileid string, uploadid string, parts []minio.CompletePart) error {
-	_, err := c.core.CompleteMultipartUpload(ctx, c.c.bucket, fileid, uploadid, parts, minio.PutObjectOptions{})
+func (c *s3Client) listParts(ctx context.Context, fileid string, uploadid string) ([]*s3.Part, error) {
+	output, err := c.client.ListParts(&s3.ListPartsInput{
+		Bucket:              aws.String(c.c.bucket),
+		ExpectedBucketOwner: new(string),
+		Key:                 aws.String(fileid),
+		UploadId:            aws.String(uploadid),
+	})
+	if err != nil {
+		return nil, errs.Wrap(constants.ErrS3, "list part fail", err)
+	}
+	return output.Parts, nil
+}
+
+func (c *s3Client) parts2completeparts(src []*s3.Part) []*s3.CompletedPart {
+	out := make([]*s3.CompletedPart, 0, len(src))
+	for _, p := range src {
+		out = append(out, &s3.CompletedPart{
+			ChecksumCRC32:  p.ChecksumCRC32,
+			ChecksumCRC32C: p.ChecksumCRC32C,
+			ChecksumSHA1:   p.ChecksumSHA1,
+			ChecksumSHA256: p.ChecksumSHA256,
+			ETag:           p.ETag,
+			PartNumber:     p.PartNumber,
+		})
+	}
+	return out
+}
+
+func (c *s3Client) EndUpload(ctx context.Context, fileid string, uploadid string, partcount int) error {
+	parts, err := c.listParts(ctx, fileid, uploadid)
+	if err != nil {
+		return err
+	}
+	if len(parts) != partcount {
+		return errs.New(constants.ErrParam, "part count not match, need:%d, get:%d", partcount, len(parts))
+	}
+	_, err = c.client.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
+		Bucket: aws.String(c.c.bucket),
+		Key:    aws.String(fileid),
+		MultipartUpload: &s3.CompletedMultipartUpload{
+			Parts: c.parts2completeparts(parts),
+		},
+		UploadId: aws.String(uploadid),
+	})
 	if err != nil {
 		return errs.Wrap(constants.ErrS3, "finish upload fail", err)
 	}
@@ -104,7 +167,12 @@ func (c *s3Client) EndUpload(ctx context.Context, fileid string, uploadid string
 }
 
 func (c *s3Client) DiscardMultiPartUpload(ctx context.Context, fileid string, uploadid string) error {
-	if err := c.core.AbortMultipartUpload(ctx, c.c.bucket, fileid, uploadid); err != nil {
+	_, err := c.client.AbortMultipartUpload(&s3.AbortMultipartUploadInput{
+		Bucket:   aws.String(c.c.bucket),
+		Key:      aws.String(fileid),
+		UploadId: aws.String(uploadid),
+	})
+	if err != nil {
 		return errs.Wrap(constants.ErrS3, "abort multipart upload fail", err)
 	}
 	return nil

@@ -103,14 +103,13 @@ message FileUploadBeginResponse {
 }
 
 message FileUploadPartResponse {
-    optional string part_ctx = 1; //refer: PartIdCtx
+    optional string hash = 1;
 }
 
 message FileUploadEndRequest {
     optional string upload_ctx = 1; //
-    repeated string part_ctx = 2; //
-    optional string file_name = 3; //
-    optional string hash = 4; //
+    optional string file_name = 2; //
+    optional string hash = 3; //
 }
 
 message FileUploadEndResponse {
@@ -122,9 +121,4 @@ message UploadIdCtx {
     optional string upload_id = 2; //
     optional string down_key = 3; //
     optional uint32 block_size = 4; //
-}
-
-message PartIdCtx {
-    optional int32 idx = 1; //
-    optional string etag = 2; //
 }
