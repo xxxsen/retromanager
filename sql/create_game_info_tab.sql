@@ -1,9 +1,9 @@
-create game_info_tab (
+create table game_info_tab (
     id bigint unsigned not null auto_increment,
-    platform int unsigned not null,
+    platform tinyint unsigned not null,
     display_name varchar(256) not null,
     file_size bigint unsigned not null,
-    desc text not null,
+    detail text not null,
     create_time bigint unsigned not null,
     update_time bigint unsigned not null,
     hash char(32) not null,

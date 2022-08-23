@@ -1,6 +1,7 @@
 package errs
 
 import (
+	"bytes"
 	"fmt"
 	"retromanager/constants"
 )
@@ -23,7 +24,14 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("Error:[code:%d, msg:%s, err:[%v], extmsg:[%+v]]", e.code, e.msg, e.err, e.extmsg)
+	buf := bytes.NewBufferString(fmt.Sprintf("Error:[code:%d, msg:%s", e.code, e.msg))
+	if e.err != nil {
+		buf.WriteString(fmt.Sprintf(", err:[%v]", e.err))
+	}
+	if len(e.extmsg) > 0 {
+		buf.WriteString(fmt.Sprintf(", extmsg:%v", e.extmsg))
+	}
+	return buf.String()
 }
 
 func (e *Error) Code() int64 {

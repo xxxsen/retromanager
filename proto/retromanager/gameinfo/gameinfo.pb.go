@@ -1262,6 +1262,179 @@ func (x *UploadIdCtx) GetBlockSize() uint32 {
 	return 0
 }
 
+type GetFileMetaRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	DownKey []string `protobuf:"bytes,1,rep,name=down_key,json=downKey" json:"down_key,omitempty"` //
+}
+
+func (x *GetFileMetaRequest) Reset() {
+	*x = GetFileMetaRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[20]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetFileMetaRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFileMetaRequest) ProtoMessage() {}
+
+func (x *GetFileMetaRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[20]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFileMetaRequest.ProtoReflect.Descriptor instead.
+func (*GetFileMetaRequest) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *GetFileMetaRequest) GetDownKey() []string {
+	if x != nil {
+		return x.DownKey
+	}
+	return nil
+}
+
+type FileItem struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	FileName   *string `protobuf:"bytes,1,opt,name=file_name,json=fileName" json:"file_name,omitempty"`       //
+	Hash       *string `protobuf:"bytes,2,opt,name=hash" json:"hash,omitempty"`                               //
+	FileSize   *string `protobuf:"bytes,3,opt,name=file_size,json=fileSize" json:"file_size,omitempty"`       //
+	CreateTime *string `protobuf:"bytes,4,opt,name=create_time,json=createTime" json:"create_time,omitempty"` //
+	DownKey    *string `protobuf:"bytes,5,opt,name=down_key,json=downKey" json:"down_key,omitempty"`          //
+}
+
+func (x *FileItem) Reset() {
+	*x = FileItem{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[21]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FileItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileItem) ProtoMessage() {}
+
+func (x *FileItem) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[21]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileItem.ProtoReflect.Descriptor instead.
+func (*FileItem) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *FileItem) GetFileName() string {
+	if x != nil && x.FileName != nil {
+		return *x.FileName
+	}
+	return ""
+}
+
+func (x *FileItem) GetHash() string {
+	if x != nil && x.Hash != nil {
+		return *x.Hash
+	}
+	return ""
+}
+
+func (x *FileItem) GetFileSize() string {
+	if x != nil && x.FileSize != nil {
+		return *x.FileSize
+	}
+	return ""
+}
+
+func (x *FileItem) GetCreateTime() string {
+	if x != nil && x.CreateTime != nil {
+		return *x.CreateTime
+	}
+	return ""
+}
+
+func (x *FileItem) GetDownKey() string {
+	if x != nil && x.DownKey != nil {
+		return *x.DownKey
+	}
+	return ""
+}
+
+type GetFileMetaResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	List []*FileItem `protobuf:"bytes,1,rep,name=list" json:"list,omitempty"` //
+}
+
+func (x *GetFileMetaResponse) Reset() {
+	*x = GetFileMetaResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gameinfo_proto_msgTypes[22]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetFileMetaResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFileMetaResponse) ProtoMessage() {}
+
+func (x *GetFileMetaResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_gameinfo_proto_msgTypes[22]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFileMetaResponse.ProtoReflect.Descriptor instead.
+func (*GetFileMetaResponse) Descriptor() ([]byte, []int) {
+	return file_gameinfo_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *GetFileMetaResponse) GetList() []*FileItem {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
 var File_gameinfo_proto protoreflect.FileDescriptor
 
 var file_gameinfo_proto_rawDesc = []byte{
@@ -1396,8 +1569,25 @@ var file_gameinfo_proto_rawDesc = []byte{
 	0x64, 0x6f, 0x77, 0x6e, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
 	0x64, 0x6f, 0x77, 0x6e, 0x4b, 0x65, 0x79, 0x12, 0x1d, 0x0a, 0x0a, 0x62, 0x6c, 0x6f, 0x63, 0x6b,
 	0x5f, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x09, 0x62, 0x6c, 0x6f,
-	0x63, 0x6b, 0x53, 0x69, 0x7a, 0x65, 0x42, 0x17, 0x5a, 0x15, 0x72, 0x65, 0x74, 0x72, 0x6f, 0x6d,
-	0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x2f, 0x67, 0x61, 0x6d, 0x65, 0x69, 0x6e, 0x66, 0x6f,
+	0x63, 0x6b, 0x53, 0x69, 0x7a, 0x65, 0x22, 0x2f, 0x0a, 0x12, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c,
+	0x65, 0x4d, 0x65, 0x74, 0x61, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x19, 0x0a, 0x08,
+	0x64, 0x6f, 0x77, 0x6e, 0x5f, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x07,
+	0x64, 0x6f, 0x77, 0x6e, 0x4b, 0x65, 0x79, 0x22, 0x94, 0x01, 0x0a, 0x08, 0x46, 0x69, 0x6c, 0x65,
+	0x49, 0x74, 0x65, 0x6d, 0x12, 0x1b, 0x0a, 0x09, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x6e, 0x61, 0x6d,
+	0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x4e, 0x61, 0x6d,
+	0x65, 0x12, 0x12, 0x0a, 0x04, 0x68, 0x61, 0x73, 0x68, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x68, 0x61, 0x73, 0x68, 0x12, 0x1b, 0x0a, 0x09, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x73, 0x69,
+	0x7a, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x66, 0x69, 0x6c, 0x65, 0x53, 0x69,
+	0x7a, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x5f, 0x74, 0x69, 0x6d,
+	0x65, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x54,
+	0x69, 0x6d, 0x65, 0x12, 0x19, 0x0a, 0x08, 0x64, 0x6f, 0x77, 0x6e, 0x5f, 0x6b, 0x65, 0x79, 0x18,
+	0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x64, 0x6f, 0x77, 0x6e, 0x4b, 0x65, 0x79, 0x22, 0x3d,
+	0x0a, 0x13, 0x47, 0x65, 0x74, 0x46, 0x69, 0x6c, 0x65, 0x4d, 0x65, 0x74, 0x61, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x26, 0x0a, 0x04, 0x6c, 0x69, 0x73, 0x74, 0x18, 0x01, 0x20,
+	0x03, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x67, 0x61, 0x6d, 0x65, 0x69, 0x6e, 0x66, 0x6f, 0x2e, 0x46,
+	0x69, 0x6c, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x52, 0x04, 0x6c, 0x69, 0x73, 0x74, 0x42, 0x17, 0x5a,
+	0x15, 0x72, 0x65, 0x74, 0x72, 0x6f, 0x6d, 0x61, 0x6e, 0x61, 0x67, 0x65, 0x72, 0x2f, 0x67, 0x61,
+	0x6d, 0x65, 0x69, 0x6e, 0x66, 0x6f,
 }
 
 var (
@@ -1412,7 +1602,7 @@ func file_gameinfo_proto_rawDescGZIP() []byte {
 	return file_gameinfo_proto_rawDescData
 }
 
-var file_gameinfo_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_gameinfo_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_gameinfo_proto_goTypes = []interface{}{
 	(*GameExtInfo)(nil),             // 0: gameinfo.GameExtInfo
 	(*GameInfo)(nil),                // 1: gameinfo.GameInfo
@@ -1434,20 +1624,24 @@ var file_gameinfo_proto_goTypes = []interface{}{
 	(*FileUploadEndRequest)(nil),    // 17: gameinfo.FileUploadEndRequest
 	(*FileUploadEndResponse)(nil),   // 18: gameinfo.FileUploadEndResponse
 	(*UploadIdCtx)(nil),             // 19: gameinfo.UploadIdCtx
+	(*GetFileMetaRequest)(nil),      // 20: gameinfo.GetFileMetaRequest
+	(*FileItem)(nil),                // 21: gameinfo.FileItem
+	(*GetFileMetaResponse)(nil),     // 22: gameinfo.GetFileMetaResponse
 }
 var file_gameinfo_proto_depIdxs = []int32{
-	0, // 0: gameinfo.GameInfo.extinfo:type_name -> gameinfo.GameExtInfo
-	1, // 1: gameinfo.ListGameResponse.list:type_name -> gameinfo.GameInfo
-	4, // 2: gameinfo.SearchGameRequest.param:type_name -> gameinfo.SearchParam
-	1, // 3: gameinfo.SearchGameResponse.list:type_name -> gameinfo.GameInfo
-	1, // 4: gameinfo.CreateGameRequest.item:type_name -> gameinfo.GameInfo
-	0, // 5: gameinfo.ModifyItem.extinfo:type_name -> gameinfo.GameExtInfo
-	9, // 6: gameinfo.ModifyGameRequest.item:type_name -> gameinfo.ModifyItem
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	0,  // 0: gameinfo.GameInfo.extinfo:type_name -> gameinfo.GameExtInfo
+	1,  // 1: gameinfo.ListGameResponse.list:type_name -> gameinfo.GameInfo
+	4,  // 2: gameinfo.SearchGameRequest.param:type_name -> gameinfo.SearchParam
+	1,  // 3: gameinfo.SearchGameResponse.list:type_name -> gameinfo.GameInfo
+	1,  // 4: gameinfo.CreateGameRequest.item:type_name -> gameinfo.GameInfo
+	0,  // 5: gameinfo.ModifyItem.extinfo:type_name -> gameinfo.GameExtInfo
+	9,  // 6: gameinfo.ModifyGameRequest.item:type_name -> gameinfo.ModifyItem
+	21, // 7: gameinfo.GetFileMetaResponse.list:type_name -> gameinfo.FileItem
+	8,  // [8:8] is the sub-list for method output_type
+	8,  // [8:8] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_gameinfo_proto_init() }
@@ -1696,6 +1890,42 @@ func file_gameinfo_proto_init() {
 				return nil
 			}
 		}
+		file_gameinfo_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetFileMetaRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gameinfo_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FileItem); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_gameinfo_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetFileMetaResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1703,7 +1933,7 @@ func file_gameinfo_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_gameinfo_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

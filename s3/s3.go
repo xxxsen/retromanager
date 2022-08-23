@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"google.golang.org/protobuf/proto"
 )
 
 var Client *s3Client
@@ -48,6 +48,7 @@ func New(opts ...Option) (*s3Client, error) {
 		Endpoint:    aws.String(c.endpoint),
 		DisableSSL:  aws.Bool(!c.ssl),
 		HTTPClient:  &http.Client{},
+		Region:      proto.String("cn"),
 	})
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrS3, "init session fail", err)
@@ -68,19 +69,28 @@ func (c *s3Client) Download(ctx context.Context, fileid string) (io.ReadCloser, 
 }
 
 func (c *s3Client) Upload(ctx context.Context, fileid string, r io.ReadSeeker, sz int64) error {
-	uploader := s3manager.NewUploader(c.sess, func(u *s3manager.Uploader) {
-		u.PartSize = 2 * 1024 * 1024 // The minimum/default allowed part size is 5MB
-		u.Concurrency = 5            // default is 5
-	})
-	_, err := uploader.Upload(&s3manager.UploadInput{
+	_, err := c.client.PutObject(&s3.PutObjectInput{
+		Body:   r,
 		Bucket: aws.String(c.c.bucket),
 		Key:    aws.String(fileid),
-		Body:   r,
 	})
 	if err != nil {
 		return errs.Wrap(constants.ErrS3, "write obj fail", err)
 	}
 	return nil
+	// uploader := s3manager.NewUploader(c.sess, func(u *s3manager.Uploader) {
+	// 	u.PartSize = 2 * 1024 * 1024 // The minimum/default allowed part size is 5MB
+	// 	u.Concurrency = 5            // default is 5
+	// })
+	// _, err := uploader.Upload(&s3manager.UploadInput{
+	// 	Bucket: aws.String(c.c.bucket),
+	// 	Key:    aws.String(fileid),
+	// 	Body:   r,
+	// })
+	// if err != nil {
+	// 	return errs.Wrap(constants.ErrS3, "write obj fail", err)
+	// }
+	// return nil
 }
 
 func (c *s3Client) Remove(ctx context.Context, fileid string) error {

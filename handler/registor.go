@@ -25,7 +25,7 @@ func OnRegist(router *gin.Engine) {
 		uploadRouter := router.Group("/upload")
 		uploadRouter.POST("/image", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.ImageUpload))
 		uploadRouter.POST("/video", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.VideoUpload))
-		uploadRouter.POST("/rom", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.RomUpload))
+		uploadRouter.POST("/file", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.FileUpload))
 		bigFileRouter := uploadRouter.Group("/bigfile")
 		bigFileRouter.POST("/begin", WrapHandler(&gameinfo.FileUploadBeginRequest{}, codec.JsonCodec, bigfile.Begin))
 		bigFileRouter.POST("/part", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), bigfile.Part))

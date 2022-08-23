@@ -122,3 +122,19 @@ message UploadIdCtx {
     optional string down_key = 3; //
     optional uint32 block_size = 4; //
 }
+
+message GetFileMetaRequest {
+    repeated string down_key = 1; //
+}
+
+message FileItem {
+    optional string file_name = 1; //
+    optional string hash = 2; //
+    optional string file_size = 3; //
+    optional string create_time = 4; //
+    optional string down_key = 5; //
+}
+
+message GetFileMetaResponse {
+    repeated FileItem list = 1; //
+}

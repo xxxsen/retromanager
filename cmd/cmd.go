@@ -4,6 +4,7 @@ import (
 	"flag"
 	"retromanager/config"
 	"retromanager/constants"
+	"retromanager/cron"
 	"retromanager/db"
 	"retromanager/handler"
 	hconfig "retromanager/handler/config"
@@ -45,6 +46,9 @@ func main() {
 	); err != nil {
 		log.Fatalf("init s3 fail, err:%v", err)
 	}
+
+	//start cronjob
+	cron.Start()
 
 	//TODO: init es
 	svr, err := server.NewServer(

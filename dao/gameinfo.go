@@ -14,7 +14,7 @@ import (
 )
 
 var gameinfoFields = []string{
-	"id", "platform", "display_name", "file_size", "desc", "create_time", "update_time", "hash", "extinfo", "down_key",
+	"id", "platform", "display_name", "file_size", "detail", "create_time", "update_time", "hash", "extinfo", "down_key",
 }
 
 var GameInfoDao = NewGameInfoDao()
@@ -147,7 +147,7 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 			"id":           item.ID,
 			"platform":     item.Platform,
 			"display_name": item.DisplayName,
-			"desc":         item.Desc,
+			"detail":       item.Desc,
 			"create_time":  item.CreateTime,
 			"update_time":  item.UpdateTime,
 			"hash":         item.Hash,
@@ -181,7 +181,7 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 		"update_time": time.Now().UnixNano() / int64(time.Millisecond),
 	}
 	if req.Modify.Desc != nil {
-		update["desc"] = *req.Modify.Desc
+		update["detail"] = *req.Modify.Desc
 	}
 	if req.Modify.DisplayName != nil {
 		update["display_name"] = *req.Modify.DisplayName
