@@ -144,9 +144,9 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 	item := req.Item
 	data := []map[string]interface{}{
 		{
-			"id":           item.ID,
 			"platform":     item.Platform,
 			"display_name": item.DisplayName,
+			"file_size":    item.FileSize,
 			"detail":       item.Desc,
 			"create_time":  item.CreateTime,
 			"update_time":  item.UpdateTime,
@@ -205,10 +205,15 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrParam, "build update", err)
 	}
-	if _, err = d.Client().ExecContext(ctx, sql, args...); err != nil {
+	rs, err := d.Client().ExecContext(ctx, sql, args...)
+	if err != nil {
 		return nil, errs.Wrap(constants.ErrDatabase, "exec update", err)
 	}
-	return &model.ModifyGameResponse{}, nil
+	cnt, err := rs.RowsAffected()
+	if err != nil {
+		return nil, errs.Wrap(constants.ErrDatabase, "get affect rows fail", err)
+	}
+	return &model.ModifyGameResponse{AffectRows: cnt}, nil
 }
 
 func (d *gameinfoImpl) DeleteGame(ctx context.Context, req *model.DeleteGameRequest) (*model.DeleteGameResponse, error) {
@@ -223,9 +228,13 @@ func (d *gameinfoImpl) DeleteGame(ctx context.Context, req *model.DeleteGameRequ
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrParam, "build delete", err)
 	}
-	_, err = d.Client().ExecContext(ctx, sql, args...)
+	rs, err := d.Client().ExecContext(ctx, sql, args...)
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrDatabase, "exec delete", err)
 	}
-	return &model.DeleteGameResponse{}, nil
+	cnt, err := rs.RowsAffected()
+	if err != nil {
+		return nil, errs.New(constants.ErrDatabase, "read rows affect fail", err)
+	}
+	return &model.DeleteGameResponse{AffectRows: cnt}, nil
 }

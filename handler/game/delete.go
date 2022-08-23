@@ -18,9 +18,12 @@ func DeleteGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 			ID: req.GameId,
 		},
 	}
-	_, err := dao.GameInfoDao.DeleteGame(ctx, daoReq)
+	rs, err := dao.GameInfoDao.DeleteGame(ctx, daoReq)
 	if err != nil {
 		return http.StatusOK, errs.Wrap(constants.ErrDatabase, "delete db fail", err), nil
+	}
+	if rs.AffectRows != 1 {
+		return http.StatusOK, errs.New(constants.ErrParam, "gameid not found"), nil
 	}
 	return http.StatusOK, nil, nil
 }

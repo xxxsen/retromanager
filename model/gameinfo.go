@@ -104,11 +104,14 @@ type ModifyGameRequest struct {
 	Modify *ModifyInfo
 }
 
-type ModifyGameResponse struct{}
+type ModifyGameResponse struct {
+	AffectRows int64
+}
 
 type DeleteGameRequest struct {
 	Query *DeleteQuery
 }
 
 type DeleteGameResponse struct {
+	AffectRows int64
 }

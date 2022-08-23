@@ -36,9 +36,12 @@ func ModifyGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 		}
 		daoReq.Modify.ExtInfo = raw
 	}
-	_, err := dao.GameInfoDao.ModifyGame(ctx, daoReq)
+	rs, err := dao.GameInfoDao.ModifyGame(ctx, daoReq)
 	if err != nil {
 		return http.StatusOK, errs.Wrap(constants.ErrDatabase, "modify db fail", err), nil
+	}
+	if rs.AffectRows == 0 {
+		return http.StatusOK, errs.New(constants.ErrParam, "gameid not found"), nil
 	}
 	return http.StatusOK, nil, nil
 }
