@@ -17,14 +17,15 @@ import (
 	"retromanager/proto/retromanager/gameinfo"
 	"retromanager/s3"
 	"retromanager/server"
+	"retromanager/server/log"
 	"retromanager/utils"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/xxxsen/log"
 	"github.com/yitter/idgenerator-go/idgen"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -156,7 +157,7 @@ func (f *S3FileDownloader) AfterDownload(ctx *gin.Context, meta *FileDownloadMet
 	if err == nil {
 		return
 	}
-	log.Errorf("file download fail, path:%s, err:%v", ctx.Request.URL.Path, err)
+	log.GetLogger(ctx).With(zap.String("path", ctx.Request.URL.Path), zap.Error(err)).Error("file download fail")
 }
 
 func CommonFilePostUpload(uploader ISmallFileUploader) server.ProcessFunc {
@@ -202,7 +203,9 @@ func CommonFileDownload(downloader IFileDownloader) server.ProcessFunc {
 		}
 		if err := caller(); err != nil {
 			e := errs.FromError(err)
-			log.Errorf("call file download fail, path:%s, err:%v", e)
+			log.GetLogger(ctx).With(
+				zap.String("path", ctx.Request.URL.Path), zap.Error(e),
+			).Error("call file download fail")
 			codec.JsonCodec.Encode(ctx, http.StatusOK, e, nil)
 		}
 		return http.StatusOK, nil, nil

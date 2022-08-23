@@ -3,8 +3,9 @@ package cron
 import (
 	"context"
 
+	"log"
+
 	"github.com/robfig/cron/v3"
-	"github.com/xxxsen/log"
 )
 
 var Default = New()
@@ -32,7 +33,7 @@ func (c *crontab) wrapTask(runner ICron) func() {
 	return func() {
 		ctx := context.Background()
 		if err := runner.Run(ctx); err != nil {
-			log.Errorf("run task:%s fail, err:%v", runner.Name(), err)
+			log.Printf("run task:%s fail, err:%v", runner.Name(), err)
 		}
 	}
 }

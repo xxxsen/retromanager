@@ -12,7 +12,9 @@ import (
 	"retromanager/s3"
 	"retromanager/server"
 
-	"github.com/xxxsen/log"
+	"retromanager/server/log"
+
+	"go.uber.org/zap"
 )
 
 var file = flag.String("config", "./config.json", "config file path")
@@ -25,18 +27,18 @@ func main() {
 		panic(err)
 	}
 	logitem := c.LogInfo
-	log.Init(logitem.File, log.StringToLevel(logitem.Level), int(logitem.FileCount), int(logitem.FileSize), int(logitem.KeepDays), logitem.Console)
+	logger := log.Init(logitem.File, logitem.Level, int(logitem.FileCount), int(logitem.FileSize), int(logitem.KeepDays), logitem.Console)
 
-	log.Infof("recv config:%+v", *c)
+	logger.Info("recv config", zap.Any("config", c))
 
 	if err := db.InitGameDB(&c.GameDBInfo); err != nil {
-		log.Fatalf("init game db fail, err:%v", err)
+		logger.With(zap.Error(err)).Fatal("init game db fail")
 	}
 	if err := db.InitFileDB(&c.FileDBInfo); err != nil {
-		log.Fatalf("init media db fail, err:%v", err)
+		logger.With(zap.Error(err)).Fatal("init media db fail")
 	}
 	if err := idgen.Init(c.IDGenInfo.WorkerID); err != nil {
-		log.Fatalf("init idgen fail, err:%v", err)
+		logger.With(zap.Error(err)).Fatal("init idgen fail")
 	}
 	if err := s3.InitGlobal(
 		s3.WithEndpoint(c.S3Info.Endpoint),
@@ -44,7 +46,7 @@ func main() {
 		s3.WithSecret(c.S3Info.SecretId, c.S3Info.SecretKey),
 		s3.WithBucket(c.S3Info.Bucket),
 	); err != nil {
-		log.Fatalf("init s3 fail, err:%v", err)
+		logger.With(zap.Error(err)).Fatal("init s3 fail")
 	}
 
 	//start cronjob
@@ -57,10 +59,10 @@ func main() {
 		server.WithAttach(constants.KeyConfigAttach, initServiceConfig(c)),
 	)
 	if err != nil {
-		log.Fatalf("init server fail, err:%v", err)
+		logger.With(zap.Error(err)).Fatal("init server fail")
 	}
 	if err := svr.Run(); err != nil {
-		log.Fatalf("run server fail, err:%w", err)
+		logger.With(zap.Error(err)).Fatal("run server fail")
 	}
 }
 

@@ -1,15 +1,15 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 	"retromanager/codec"
 	"retromanager/errs"
 	"retromanager/server"
+	"retromanager/server/log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/xxxsen/log"
+	"go.uber.org/zap"
 )
 
 func WrapHandler(ptr interface{}, cc codec.ICodec, pfunc server.ProcessFunc) gin.HandlerFunc {
@@ -49,13 +49,22 @@ func wrapHandler(h server.IHandler) gin.HandlerFunc {
 			perr = wrapErr(perr)
 			eerr = wrapErr(eerr)
 			step, err, exist := finderr("decode", derr, "proc", perr, "encode", eerr)
-			msg := fmt.Sprintf("serve request finish, method:%s, path:%s, statuscode:%d", ctx.Request.Method, ctx.Request.URL.Path, statuscode)
-			writer := log.Infof
+			logger := log.GetLogger(ctx).With(
+				zap.String("method", ctx.Request.Method),
+				zap.Int("statuscode", statuscode),
+				zap.String("path", ctx.Request.URL.Path),
+			)
+			writer := logger.Info
 			if exist {
-				msg += fmt.Sprintf(", err:[step:%s, code:%d, msg:%s, detail:%s]", step, err.Code(), err.Message(), err.Error())
-				writer = log.Errorf
+				logger = logger.With(
+					zap.String("step", step),
+					zap.Int("code", int(err.Code())),
+					zap.String("msg", err.Message()),
+					zap.Error(err),
+				)
+				writer = logger.Error
 			}
-			writer(msg)
+			writer("process msg finish")
 		}()
 		req := h.Request()
 		c := h.Codec()

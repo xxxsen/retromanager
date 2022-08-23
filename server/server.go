@@ -1,10 +1,13 @@
 package server
 
 import (
+	"context"
 	"retromanager/constants"
 	"retromanager/errs"
+	"retromanager/server/log"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type server struct {
@@ -46,5 +49,10 @@ func (s *server) registDefault(engine *gin.Engine) {
 	engine.Use(
 		PanicRecoverMiddleware(s),
 		SupportAttachMiddleware(s),
+		EnableServerTrace(s),
 	)
+}
+
+func GetLogger(ctx context.Context, name string) *zap.Logger {
+	return log.GetLogger(ctx).With(zap.String("name", name))
 }
