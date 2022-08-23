@@ -49,7 +49,7 @@ func wrapHandler(h server.IHandler) gin.HandlerFunc {
 			perr = wrapErr(perr)
 			eerr = wrapErr(eerr)
 			step, err, exist := finderr("decode", derr, "proc", perr, "encode", eerr)
-			msg := fmt.Sprintf("serve request finish, path:%s, statuscode:%d", ctx.Request.URL.Path, statuscode)
+			msg := fmt.Sprintf("serve request finish, method:%s, path:%s, statuscode:%d", ctx.Request.Method, ctx.Request.URL.Path, statuscode)
 			writer := log.Infof
 			if exist {
 				msg += fmt.Sprintf(", err:[step:%s, code:%d, msg:%s, detail:%s]", step, err.Code(), err.Message(), err.Error())

@@ -23,17 +23,17 @@ func OnRegist(router *gin.Engine) {
 	//upload
 	{
 		uploadRouter := router.Group("/upload")
-		uploadRouter.POST("/image", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.ImageUpload))
-		uploadRouter.POST("/video", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.VideoUpload))
-		uploadRouter.POST("/file", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), file.FileUpload))
+		uploadRouter.POST("/image", WrapHandler(&file.BasicFileUploadRequest{}, codec.CustomCodec(codec.JsonCodec, codec.MultipartCodec), file.ImageUpload))
+		uploadRouter.POST("/video", WrapHandler(&file.BasicFileUploadRequest{}, codec.CustomCodec(codec.JsonCodec, codec.MultipartCodec), file.VideoUpload))
+		uploadRouter.POST("/file", WrapHandler(&file.BasicFileUploadRequest{}, codec.CustomCodec(codec.JsonCodec, codec.MultipartCodec), file.FileUpload))
 		bigFileRouter := uploadRouter.Group("/bigfile")
 		bigFileRouter.POST("/begin", WrapHandler(&gameinfo.FileUploadBeginRequest{}, codec.JsonCodec, bigfile.Begin))
-		bigFileRouter.POST("/part", WrapHandler(nil, codec.CustomCodec(codec.JsonCodec, codec.NopCodec), bigfile.Part))
+		bigFileRouter.POST("/part", WrapHandler(&bigfile.PartUploadRequest{}, codec.CustomCodec(codec.JsonCodec, codec.MultipartCodec), bigfile.Part))
 		bigFileRouter.POST("/end", WrapHandler(&gameinfo.FileUploadEndRequest{}, codec.JsonCodec, bigfile.End))
 
 	}
 	//download
 	{
-		router.GET("/file", WrapHandler(nil, codec.NopCodec, file.FileDownload)) //input: down_key
+		router.GET("/file", WrapHandler(&file.BasicFileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.FileDownload)) //input: down_key
 	}
 }

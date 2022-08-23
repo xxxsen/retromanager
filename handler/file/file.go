@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"mime/multipart"
 	"net/http"
 	"path/filepath"
 	"retromanager/cache"
@@ -71,15 +72,19 @@ type ISmallFileUploader interface {
 type S3SmallFileUploader struct {
 }
 
+type BasicFileUploadRequest struct {
+	File *multipart.FileHeader `form:"file" binding:"required"`
+	MD5  string                `form:"md5" binding:"required"`
+}
+
 func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}) (*FileUploadMeta, bool, error) {
-	file, header, err := ctx.Request.FormFile("file")
+	req := request.(*BasicFileUploadRequest)
+	header := req.File
+	file, err := header.Open()
 	if err != nil {
-		return nil, false, errs.Wrap(constants.ErrParam, "get form file fail", err)
+		return nil, false, errs.Wrap(constants.ErrParam, "open file fail", err)
 	}
-	md5, exist := ctx.GetPostForm("md5")
-	if !exist {
-		return nil, false, errs.New(constants.ErrParam, "md5 not found")
-	}
+	md5 := req.MD5
 	if header.Size > constants.MaxPostUploadSize {
 		file.Close()
 		return nil, false, errs.New(constants.ErrParam, "file size out of limit")
@@ -274,6 +279,10 @@ func (uploader *FileUploader) AfterUpload(ctx *gin.Context, realUpload bool, met
 	}, nil
 }
 
+type BasicFileDownloadRequest struct {
+	DownKey string `form:"down_key" binding:"required"`
+}
+
 type FileDownloader struct {
 	S3FileDownloader
 	c *cache.Cache
@@ -284,11 +293,8 @@ func NewFileDownloader(c *cache.Cache) *FileDownloader {
 }
 
 func (d *FileDownloader) BeforeDownload(ctx *gin.Context, request interface{}) (*FileDownloadMeta, error) {
-	downKey := ctx.Request.URL.Query().Get("down_key")
-	if len(downKey) == 0 {
-		return nil, errs.New(constants.ErrParam, "no fileid found")
-	}
-
+	req := request.(*BasicFileDownloadRequest)
+	downKey := req.DownKey
 	ifileinfo, exist, err := cacheGetFileMeta(ctx, d.c, downKey, func() (interface{}, bool, error) {
 		daoRsp, exist, err := dao.FileInfoDao.GetFile(ctx, &model.GetFileRequest{
 			DownKey: downKey,

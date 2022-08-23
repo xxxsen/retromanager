@@ -5,23 +5,17 @@ import (
 	"retromanager/errs"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/schema"
 )
 
 var QueryCodec = &queryCodec{}
 
 type queryCodec struct {
+	nopCodec
 }
 
 func (c *queryCodec) Decode(ctx *gin.Context, request interface{}) errs.IError {
-	dec := schema.NewDecoder()
-	dec.IgnoreUnknownKeys(true)
-	if err := dec.Decode(request, ctx.Request.URL.Query()); err != nil {
-		return errs.Wrap(constants.ErrParam, "invalid query", err)
+	if err := ctx.ShouldBind(request); err != nil {
+		return errs.Wrap(constants.ErrParam, "bind query fail", err)
 	}
-	return nil
-}
-
-func (c *queryCodec) Encode(ctx *gin.Context, statuscode int, err errs.IError, response interface{}) errs.IError {
 	return nil
 }

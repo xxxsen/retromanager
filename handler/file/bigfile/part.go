@@ -7,23 +7,24 @@ import (
 	"retromanager/proto/retromanager/gameinfo"
 	"retromanager/s3"
 	"retromanager/utils"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
+type PartUploadRequest struct {
+	PartId    uint64 `form:"part_id" binding:"required"`
+	MD5       string `form:"md5" binding:"required"`
+	UploadCtx string `form:"upload_ctx" binding:"required"`
+}
+
 func Part(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
-	suploadid, uploadIdExist := ctx.GetPostForm("upload_id")
-	spartid, partIdExist := ctx.GetPostForm("part_id")
-	md5, md5exist := ctx.GetPostForm("md5")
-	if !uploadIdExist || !partIdExist || md5exist {
-		return http.StatusOK, errs.New(constants.ErrParam, "no partid/uploadid/md5 found"), nil
-	}
-	partid, err := strconv.ParseUint(spartid, 10, 64)
-	if err != nil {
-		return http.StatusOK, errs.Wrap(constants.ErrParam, "parse partid fail", err), nil
-	}
-	uploadctx, err := utils.DecodeUploadID(suploadid)
+	req := request.(*PartUploadRequest)
+	var (
+		partid     = req.PartId
+		md5        = req.MD5
+		suploadctx = req.UploadCtx
+	)
+	uploadctx, err := utils.DecodeUploadID(suploadctx)
 	if err != nil {
 		return http.StatusOK, errs.Wrap(constants.ErrParam, "parse uploadid fail", err), nil
 	}
