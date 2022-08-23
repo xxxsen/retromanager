@@ -30,9 +30,9 @@ import (
 
 var fileCache, _ = cache.New(20000)
 
-var ImageUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeImage), fileCache, ImageExtChecker))
-var VideoUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeVideo), fileCache, VideoExtChecker))
-var FileUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeFile), fileCache, nil))
+var ImageUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeImage), ImageExtChecker))
+var VideoUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeVideo), VideoExtChecker))
+var FileUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeFile), nil))
 var FileDownload = CommonFileDownload(NewFileDownloader(fileCache))
 
 type TypeCheckFunc func(meta *FileUploadMeta) error
@@ -229,17 +229,15 @@ func cacheGetFileMeta(ctx context.Context, c *cache.Cache, key interface{},
 type FileUploader struct {
 	S3SmallFileUploader
 	typ  uint32
-	c    *cache.Cache
 	ckfn TypeCheckFunc
 }
 
-func NewFileUploader(typ uint32, c *cache.Cache, ckfn TypeCheckFunc) *FileUploader {
+func NewFileUploader(typ uint32, ckfn TypeCheckFunc) *FileUploader {
 	if ckfn == nil {
 		ckfn = func(meta *FileUploadMeta) error { return nil }
 	}
 	return &FileUploader{
 		typ:  typ,
-		c:    c,
 		ckfn: ckfn,
 	}
 }
@@ -252,11 +250,6 @@ func (uploader *FileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 	meta.DownKey = fmt.Sprintf("%d_%s", uploader.typ, meta.DownKey)
 	if err := uploader.ckfn(meta); err != nil {
 		return nil, false, errs.Wrap(constants.ErrParam, "meta check not pass", err)
-	}
-
-	_, exist, _ := uploader.c.Get(ctx, meta.DownKey)
-	if exist {
-		return meta, false, nil
 	}
 	return meta, true, nil
 }
