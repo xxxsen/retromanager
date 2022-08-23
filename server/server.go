@@ -36,6 +36,7 @@ func (s *server) initServer() error {
 }
 
 func (s *server) Run() error {
+	gin.SetMode(gin.ReleaseMode)
 	engine := gin.New()
 	s.registDefault(engine)
 	s.c.registerFn(engine)
