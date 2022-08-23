@@ -59,6 +59,7 @@ type FileUploadMeta struct {
 	FileName string
 	DownKey  string
 	FileSize int64
+	MD5      string
 }
 
 type ISmallFileUploader interface {
@@ -75,6 +76,10 @@ func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 	if err != nil {
 		return nil, false, errs.Wrap(constants.ErrParam, "get form file fail", err)
 	}
+	md5, exist := ctx.GetPostForm("md5")
+	if !exist {
+		return nil, false, errs.New(constants.ErrParam, "md5 not found")
+	}
 	if header.Size > constants.MaxPostUploadSize {
 		file.Close()
 		return nil, false, errs.New(constants.ErrParam, "file size out of limit")
@@ -82,13 +87,14 @@ func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 	return &FileUploadMeta{
 		Reader:   file,
 		FileName: header.Filename,
+		MD5:      md5,
 		DownKey:  utils.EncodeFileId(uint64(idgen.NextId())),
 		FileSize: header.Size,
 	}, true, nil
 }
 
 func (f *S3SmallFileUploader) OnUpload(ctx *gin.Context, meta *FileUploadMeta) error {
-	if err := s3.Client.Upload(ctx, meta.DownKey, meta.Reader, meta.FileSize); err != nil {
+	if err := s3.Client.Upload(ctx, meta.DownKey, meta.Reader, meta.FileSize, meta.MD5); err != nil {
 		return errs.Wrap(constants.ErrS3, "upload to s3 fail", err)
 	}
 	return nil

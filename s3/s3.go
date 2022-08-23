@@ -2,7 +2,10 @@ package s3
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/hex"
 	"io"
+	"log"
 	"net/http"
 	"retromanager/constants"
 	"retromanager/errs"
@@ -20,6 +23,15 @@ type s3Client struct {
 	c      *config
 	sess   *session.Session
 	client *s3.S3
+}
+
+func toBase64MD5CheckSum(val string) *string {
+	raw, err := hex.DecodeString(val)
+	if err != nil {
+		log.Printf("invalid md5 checksum:%s, err:%v", val, err)
+		return aws.String("invalid")
+	}
+	return aws.String(base64.StdEncoding.EncodeToString(raw))
 }
 
 func InitGlobal(opts ...Option) error {
@@ -68,29 +80,20 @@ func (c *s3Client) Download(ctx context.Context, fileid string) (io.ReadCloser, 
 	return output.Body, nil
 }
 
-func (c *s3Client) Upload(ctx context.Context, fileid string, r io.ReadSeeker, sz int64) error {
-	_, err := c.client.PutObject(&s3.PutObjectInput{
+func (c *s3Client) Upload(ctx context.Context, fileid string, r io.ReadSeeker, sz int64, cks ...string) error {
+	input := &s3.PutObjectInput{
 		Body:   r,
 		Bucket: aws.String(c.c.bucket),
 		Key:    aws.String(fileid),
-	})
+	}
+	if len(cks) > 0 {
+		input.ContentMD5 = toBase64MD5CheckSum(cks[0])
+	}
+	_, err := c.client.PutObject(input)
 	if err != nil {
 		return errs.Wrap(constants.ErrS3, "write obj fail", err)
 	}
 	return nil
-	// uploader := s3manager.NewUploader(c.sess, func(u *s3manager.Uploader) {
-	// 	u.PartSize = 2 * 1024 * 1024 // The minimum/default allowed part size is 5MB
-	// 	u.Concurrency = 5            // default is 5
-	// })
-	// _, err := uploader.Upload(&s3manager.UploadInput{
-	// 	Bucket: aws.String(c.c.bucket),
-	// 	Key:    aws.String(fileid),
-	// 	Body:   r,
-	// })
-	// if err != nil {
-	// 	return errs.Wrap(constants.ErrS3, "write obj fail", err)
-	// }
-	// return nil
 }
 
 func (c *s3Client) Remove(ctx context.Context, fileid string) error {
@@ -115,14 +118,18 @@ func (c *s3Client) BeginUpload(ctx context.Context, fileid string) (string, erro
 	return *output.UploadId, nil
 }
 
-func (c *s3Client) UploadPart(ctx context.Context, fileid string, uploadid string, partid int, file io.ReadSeeker) error {
-	_, err := c.client.UploadPart(&s3.UploadPartInput{
+func (c *s3Client) UploadPart(ctx context.Context, fileid string, uploadid string, partid int, file io.ReadSeeker, cks ...string) error {
+	input := &s3.UploadPartInput{
 		Body:       file,
 		Bucket:     aws.String(c.c.bucket),
 		Key:        aws.String(fileid),
 		PartNumber: aws.Int64(int64(partid)),
 		UploadId:   aws.String(uploadid),
-	})
+	}
+	if len(cks) > 0 {
+		input.ContentMD5 = toBase64MD5CheckSum(cks[0])
+	}
+	_, err := c.client.UploadPart(input)
 	if err != nil {
 		return errs.Wrap(constants.ErrS3, "put part fail", err)
 	}

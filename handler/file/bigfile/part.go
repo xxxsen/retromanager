@@ -15,8 +15,9 @@ import (
 func Part(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
 	suploadid, uploadIdExist := ctx.GetPostForm("upload_id")
 	spartid, partIdExist := ctx.GetPostForm("part_id")
-	if !uploadIdExist || !partIdExist {
-		return http.StatusOK, errs.New(constants.ErrParam, "no partid/uploadid found"), nil
+	md5, md5exist := ctx.GetPostForm("md5")
+	if !uploadIdExist || !partIdExist || md5exist {
+		return http.StatusOK, errs.New(constants.ErrParam, "no partid/uploadid/md5 found"), nil
 	}
 	partid, err := strconv.ParseUint(spartid, 10, 64)
 	if err != nil {
@@ -45,7 +46,7 @@ func Part(ctx *gin.Context, request interface{}) (int, errs.IError, interface{})
 	if partid == uint64(maxpartid) && (maxpartid-1)*constants.BlockSize+int(header.Size) != int(uploadctx.GetFileSize()) {
 		return http.StatusOK, errs.New(constants.ErrParam, "full block size != file size").WithDebugMsg("last block size:%d", header.Size), nil
 	}
-	err = s3.Client.UploadPart(ctx, uploadctx.GetDownKey(), uploadctx.GetUploadId(), int(partid), file)
+	err = s3.Client.UploadPart(ctx, uploadctx.GetDownKey(), uploadctx.GetUploadId(), int(partid), file, md5)
 	if err != nil {
 		return http.StatusOK, errs.Wrap(constants.ErrS3, "upload part fail", err), nil
 	}
