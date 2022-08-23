@@ -19,7 +19,7 @@ func End(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) 
 	req := request.(*gameinfo.FileUploadEndRequest)
 	if len(req.GetHash()) == 0 || len(req.GetFileName()) == 0 ||
 		len(req.GetUploadCtx()) == 0 {
-		return http.StatusOK, errs.New(constants.ErrParam, "invalid hash/filename/partctx/uploadctx"), nil
+		return http.StatusOK, errs.New(constants.ErrParam, "invalid hash/filename/uploadctx"), nil
 	}
 	uploadctx, err := utils.DecodeUploadID(req.GetUploadCtx())
 	if err != nil {
