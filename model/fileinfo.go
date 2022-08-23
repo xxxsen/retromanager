@@ -23,3 +23,18 @@ type FileItem struct {
 type GetFileResponse struct {
 	Item *FileItem
 }
+
+type ListFileQuery struct {
+	ID      []uint64
+	DownKey []string
+}
+
+type ListFileRequest struct {
+	Query  *ListFileQuery
+	Offset uint32
+	Limit  uint32
+}
+
+type ListFileResponse struct {
+	List []*FileItem
+}

@@ -36,4 +36,8 @@ func OnRegist(router *gin.Engine) {
 	{
 		router.GET("/file", WrapHandler(&file.BasicFileDownloadRequest{}, codec.CustomCodec(codec.NopCodec, codec.QueryCodec), file.FileDownload)) //input: down_key
 	}
+	//meta
+	{
+		router.POST("/file/meta", WrapHandler(&gameinfo.GetFileMetaRequest{}, codec.JsonCodec, file.Meta))
+	}
 }

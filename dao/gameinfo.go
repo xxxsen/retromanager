@@ -17,7 +17,7 @@ var gameinfoFields = []string{
 	"id", "platform", "display_name", "file_size", "detail", "create_time", "update_time", "hash", "extinfo", "down_key",
 }
 
-var GameInfoDao = NewGameInfoDao()
+var GameInfoDao GameInfoService = NewGameInfoDao()
 
 type GameInfoService interface {
 	GetGame(ctx context.Context, req *model.GetGameRequest) (*model.GetGameResponse, bool, error)

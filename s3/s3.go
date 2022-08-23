@@ -197,3 +197,20 @@ func (c *s3Client) DiscardMultiPartUpload(ctx context.Context, fileid string, up
 	}
 	return nil
 }
+
+type ObjectMetaInfo struct {
+	ETag *string
+}
+
+func (c *s3Client) GetFileInfo(ctx context.Context, fileid string) (*ObjectMetaInfo, error) {
+	out, err := c.client.HeadObject(&s3.HeadObjectInput{
+		Bucket: aws.String(c.c.bucket),
+		Key:    aws.String(fileid),
+	})
+	if err != nil {
+		return nil, errs.Wrap(constants.ErrS3, "get obj info from s3 fail", err)
+	}
+	return &ObjectMetaInfo{
+		ETag: out.ETag,
+	}, nil
+}
