@@ -56,7 +56,6 @@ var VideoExtChecker = ExtNameChecker(".mp4")
 
 type FileUploadMeta struct {
 	Reader   io.ReadSeekCloser
-	Hash     string
 	FileName string
 	DownKey  string
 	FileSize int64
@@ -266,7 +265,7 @@ func (uploader *FileUploader) AfterUpload(ctx *gin.Context, realUpload bool, met
 	if _, err := dao.FileInfoDao.CreateFile(ctx, &model.CreateFileRequest{
 		Item: &model.FileItem{
 			FileName:   meta.FileName,
-			Hash:       meta.Hash,
+			Hash:       meta.MD5,
 			FileSize:   uint64(meta.FileSize),
 			CreateTime: uint64(time.Now().UnixMilli()),
 			DownKey:    meta.DownKey,
