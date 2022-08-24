@@ -19,6 +19,7 @@ func ModifyGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 	}
 	daoReq := &model.ModifyGameRequest{
 		GameID: req.GetGameId(),
+		State:  proto.Uint32(dao.GameStateNormal),
 		Modify: &model.ModifyInfo{
 			Platform:    req.Item.Platform,
 			DisplayName: req.Item.DisplayName,

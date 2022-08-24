@@ -11,6 +11,14 @@ import (
 	"time"
 
 	"github.com/didi/gendry/builder"
+	"google.golang.org/protobuf/proto"
+)
+
+type GameState int
+
+const (
+	GameStateNormal = 1
+	GameStateDelete = 2
 )
 
 var gameinfoFields = []string{
@@ -28,10 +36,15 @@ type GameInfoService interface {
 }
 
 type gameinfoImpl struct {
+	notifyers []IDataNotifyer
 }
 
 func NewGameInfoDao() *gameinfoImpl {
 	return &gameinfoImpl{}
+}
+
+func (d *gameinfoImpl) Watch(notifyer IDataNotifyer) {
+	d.notifyers = append(d.notifyers, notifyer)
 }
 
 func (d *gameinfoImpl) Client() *sql.DB {
@@ -72,7 +85,7 @@ func (d *gameinfoImpl) buildTotal(ctx context.Context, where map[string]interfac
 
 func (d *gameinfoImpl) GetGame(ctx context.Context, req *model.GetGameRequest) (*model.GetGameResponse, bool, error) {
 	subReq := &model.ListGameRequest{
-		Query:     &model.ListQuery{ID: &req.GameId},
+		Query:     &model.ListQuery{ID: &req.GameId, State: proto.Uint32(GameStateNormal)},
 		NeedTotal: false,
 		Offset:    0,
 		Limit:     1,
@@ -97,6 +110,9 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 		}
 		if req.Query.Platform != nil {
 			where["platform"] = *req.Query.Platform
+		}
+		if req.Query.State != nil {
+			where["state"] = *req.Query.State
 		}
 	}
 	if req.Order != nil {
@@ -153,6 +169,7 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 			"hash":         item.Hash,
 			"extinfo":      item.ExtInfo,
 			"down_key":     item.DownKey,
+			"state":        GameStateNormal,
 		},
 	}
 	sql, args, err := builder.BuildInsert(d.Table(), data)
@@ -167,6 +184,7 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrDatabase, "get insert id", err)
 	}
+	AsyncNotify(ctx, d.Table(), ActionCreate, uint64(id), d.notifyers...)
 	return &model.CreateGameResponse{GameId: uint64(id)}, nil
 }
 
@@ -176,6 +194,9 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 	}
 	where := map[string]interface{}{
 		"id": req.GameID,
+	}
+	if req.State != nil {
+		where["state"] = *req.State
 	}
 	update := map[string]interface{}{
 		"update_time": time.Now().UnixNano() / int64(time.Millisecond),
@@ -201,6 +222,9 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 	if req.Modify.DownKey != nil {
 		update["down_key"] = *req.Modify.DownKey
 	}
+	if req.Modify.State != nil {
+		update["state"] = *req.Modify.State
+	}
 	sql, args, err := builder.BuildUpdate(d.Table(), where, update)
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrParam, "build update", err)
@@ -213,28 +237,21 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrDatabase, "get affect rows fail", err)
 	}
+	AsyncNotify(ctx, d.Table(), ActionModify, req.GameID, d.notifyers...)
 	return &model.ModifyGameResponse{AffectRows: cnt}, nil
 }
 
 func (d *gameinfoImpl) DeleteGame(ctx context.Context, req *model.DeleteGameRequest) (*model.DeleteGameResponse, error) {
-	if req.Query == nil {
-		return nil, errs.New(constants.ErrParam, "nil query")
+	daoReq := &model.ModifyGameRequest{
+		GameID: req.GameID,
+		State:  proto.Uint32(GameStateNormal),
+		Modify: &model.ModifyInfo{
+			State: proto.Uint32(GameStateDelete),
+		},
 	}
-	where := map[string]interface{}{}
-	if req.Query.ID != nil {
-		where["id"] = *req.Query.ID
-	}
-	sql, args, err := builder.BuildDelete(d.Table(), where)
-	if err != nil {
-		return nil, errs.Wrap(constants.ErrParam, "build delete", err)
-	}
-	rs, err := d.Client().ExecContext(ctx, sql, args...)
+	daoRsp, err := d.ModifyGame(ctx, daoReq)
 	if err != nil {
 		return nil, errs.Wrap(constants.ErrDatabase, "exec delete", err)
 	}
-	cnt, err := rs.RowsAffected()
-	if err != nil {
-		return nil, errs.New(constants.ErrDatabase, "read rows affect fail", err)
-	}
-	return &model.DeleteGameResponse{AffectRows: cnt}, nil
+	return &model.DeleteGameResponse{AffectRows: daoRsp.AffectRows}, nil
 }

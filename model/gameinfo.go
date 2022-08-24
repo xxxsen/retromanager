@@ -11,10 +11,7 @@ import (
 type ListQuery struct {
 	ID       *uint64
 	Platform *uint32
-}
-
-type DeleteQuery struct {
-	ID *uint64
+	State    *uint32
 }
 
 type OrderByField string
@@ -97,10 +94,12 @@ type ModifyInfo struct {
 	Desc        *string
 	ExtInfo     []byte
 	DownKey     *string
+	State       *uint32
 }
 
 type ModifyGameRequest struct {
 	GameID uint64
+	State  *uint32
 	Modify *ModifyInfo
 }
 
@@ -109,7 +108,7 @@ type ModifyGameResponse struct {
 }
 
 type DeleteGameRequest struct {
-	Query *DeleteQuery
+	GameID uint64
 }
 
 type DeleteGameResponse struct {

@@ -9,7 +9,9 @@ create table game_info_tab (
     hash char(32) not null,
     extinfo blob not null,
     down_key varchar(64) not null,
+    state tinyint unsigned not null,
     primary key(id),
-    unique idx_hash(hash),
-    key idx_platform_createtime(platform, create_time)
+    key idx_hash(hash),
+    key idx_platform_createtime(state, platform, create_time),
+    key idx_updatetime(update_time)
 ) ENGINE=InnoDB CHARACTER SET utf8mb4;

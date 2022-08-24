@@ -14,9 +14,7 @@ import (
 func DeleteGame(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
 	req := request.(*gameinfo.DeleteGameRequest)
 	daoReq := &model.DeleteGameRequest{
-		Query: &model.DeleteQuery{
-			ID: req.GameId,
-		},
+		GameID: req.GetGameId(),
 	}
 	rs, err := dao.GameInfoDao.DeleteGame(ctx, daoReq)
 	if err != nil {
