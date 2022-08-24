@@ -9,9 +9,10 @@ import (
 )
 
 type ListQuery struct {
-	ID       *uint64
-	Platform *uint32
-	State    *uint32
+	ID         *uint64
+	Platform   *uint32
+	State      *uint32
+	UpdateTime *uint64
 }
 
 type OrderByField string
