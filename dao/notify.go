@@ -3,23 +3,20 @@ package dao
 import (
 	"context"
 	"log"
+	"retromanager/model"
 	"runtime/debug"
 )
 
-type ActionType int
-
-const (
-	ActionCreate ActionType = 1
-	ActionModify ActionType = 2
-	ActionDelete ActionType = 3
-)
+type IWatcher interface {
+	Watch(notifyer IDataNotifyer)
+}
 
 type IDataNotifyer interface {
 	Name() string
-	OnChange(ctx context.Context, table string, action ActionType, id uint64)
+	OnChange(ctx context.Context, table string, action model.ActionType, id uint64)
 }
 
-func AsyncNotify(ctx context.Context, table string, action ActionType, id uint64, notifyers ...IDataNotifyer) {
+func AsyncNotify(ctx context.Context, table string, action model.ActionType, id uint64, notifyers ...IDataNotifyer) {
 	for _, notifyer := range notifyers {
 		notifyer := notifyer
 		go func() {

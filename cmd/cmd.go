@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"retromanager/action"
 	"retromanager/config"
 	"retromanager/constants"
 	"retromanager/cron"
+	"retromanager/dao"
 	"retromanager/db"
 	"retromanager/handler"
 	hconfig "retromanager/handler/config"
@@ -34,6 +36,7 @@ func main() {
 	if err := db.InitGameDB(&c.GameDBInfo); err != nil {
 		logger.With(zap.Error(err)).Fatal("init game db fail")
 	}
+	dao.GameInfoDao.Watch(action.NewDB2ESAction())
 	if err := db.InitFileDB(&c.FileDBInfo); err != nil {
 		logger.With(zap.Error(err)).Fatal("init media db fail")
 	}

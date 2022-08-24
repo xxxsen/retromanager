@@ -24,7 +24,7 @@ func ListGame(ctx *gin.Context, request interface{}) (int, errs.IError, interfac
 		return http.StatusOK, errs.New(constants.ErrParam, "invalid params").WithDebugMsg("limit invalid"), nil
 	}
 	listRsp, err := dao.GameInfoDao.ListGame(ctx, &model.ListGameRequest{
-		Query:     &model.ListQuery{Platform: req.Platform, State: proto.Uint32(dao.GameStateNormal)},
+		Query:     &model.ListQuery{Platform: req.Platform, State: proto.Uint32(model.GameStateNormal)},
 		Order:     &model.OrderBy{Field: model.OrderByCreateTime, Asc: true},
 		NeedTotal: true,
 		Offset:    req.GetOffset(),
