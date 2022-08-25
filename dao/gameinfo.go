@@ -109,8 +109,11 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 		if req.Query.State != nil {
 			where["state"] = *req.Query.State
 		}
-		if req.Query.UpdateTime != nil {
-			where["update_time"] = *req.Query.UpdateTime
+		if len(req.Query.UpdateTime) > 0 {
+			where["update_time >="] = req.Query.UpdateTime[0]
+			if len(req.Query.UpdateTime) > 1 {
+				where["update_time <="] = req.Query.UpdateTime[1]
+			}
 		}
 	}
 	if req.Order != nil {

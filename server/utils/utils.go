@@ -19,7 +19,7 @@ func GetTraceId(ctx context.Context) (string, bool) {
 	return v.(string), true
 }
 
-func MustGetTraceID(ctx context.Context) string {
+func MustGetTraceId(ctx context.Context) string {
 	if v, ok := GetTraceId(ctx); ok {
 		return v
 	}

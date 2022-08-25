@@ -76,7 +76,10 @@ func Logger() *zap.Logger {
 }
 
 func GetLogger(ctx context.Context) *zap.Logger {
-	traceid := utils.MustGetTraceID(ctx)
-	logger := logInst.With(zap.String("traceid", traceid))
+	logger := logInst
+	traceid, exist := utils.GetTraceId(ctx)
+	if exist {
+		logger = logInst.With(zap.String("traceid", traceid))
+	}
 	return logger
 }
