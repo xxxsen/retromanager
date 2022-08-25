@@ -22,6 +22,7 @@ var GameInfoDao GameInfoService = NewGameInfoDao()
 
 type GameInfoService interface {
 	IWatcher
+	Table() string
 	GetGame(ctx context.Context, req *model.GetGameRequest) (*model.GetGameResponse, bool, error)
 	ListGame(ctx context.Context, req *model.ListGameRequest) (*model.ListGameResponse, error)
 	CreateGame(ctx context.Context, req *model.CreateGameRequest) (*model.CreateGameResponse, error)

@@ -31,6 +31,13 @@ type S3Config struct {
 	Bucket    string `json:"bucket"`
 }
 
+type EsConfig struct {
+	User     string   `json:"user"`
+	Password string   `json:"password"`
+	Timeout  int      `json:"timeout"`
+	Host     []string `json:"host"`
+}
+
 type ServerConfig struct {
 	Address string `json:"address"`
 }
@@ -46,6 +53,7 @@ type Config struct {
 	ServerInfo ServerConfig `json:"server_info"`
 	S3Info     S3Config     `json:"s3_info"`
 	IDGenInfo  IDGenConfig  `json:"idgen_info"`
+	EsInfo     EsConfig     `json:"es_info"`
 }
 
 func Parse(f string) (*Config, error) {

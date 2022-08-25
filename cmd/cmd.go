@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"retromanager/action"
 	"retromanager/config"
@@ -8,11 +9,14 @@ import (
 	"retromanager/cron"
 	"retromanager/dao"
 	"retromanager/db"
+	"retromanager/es"
+	"retromanager/esservice"
 	"retromanager/handler"
 	hconfig "retromanager/handler/config"
 	"retromanager/idgen"
 	"retromanager/s3"
 	"retromanager/server"
+	"time"
 
 	"retromanager/server/log"
 
@@ -51,11 +55,20 @@ func main() {
 	); err != nil {
 		logger.With(zap.Error(err)).Fatal("init s3 fail")
 	}
+	if err := es.Init(
+		es.WithAuth(c.EsInfo.User, c.EsInfo.Password),
+		es.WithHost(c.EsInfo.Host...),
+		es.WithTimeout(time.Duration(c.EsInfo.Timeout)*time.Millisecond),
+	); err != nil {
+		logger.With(zap.Error(err)).Fatal("init es fail")
+	}
+	if err := esservice.TryCreateIndex(context.Background(), es.Client, dao.GameInfoDao.Table()); err != nil {
+		logger.With(zap.Error(err)).Fatal("create index fail")
+	}
 
 	//start cronjob
 	cron.Start()
 
-	//TODO: init es
 	svr, err := server.NewServer(
 		server.WithAddress(c.ServerInfo.Address),
 		server.WithHandlerRegister(handler.OnRegist),
