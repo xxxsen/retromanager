@@ -9,7 +9,6 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/hnlq715/golang-lru v0.3.0
-	github.com/olivere/elastic v6.2.37+incompatible
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/xxxsen/runner v0.0.1
