@@ -37,6 +37,9 @@ func checkCreate(req *gameinfo.CreateGameRequest) error {
 	if len(item.GetDownKey()) == 0 {
 		return fmt.Errorf("down key not found")
 	}
+	if len(item.GetFileName()) == 0 {
+		return fmt.Errorf("file name empty")
+	}
 	return nil
 }
 
@@ -65,6 +68,7 @@ func CreateGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 			Hash:        item.GetHash(),
 			DownKey:     item.GetDownKey(),
 			ExtInfo:     extinfo,
+			FileName:    item.GetFileName(),
 		},
 	}
 	daoRsp, err := dao.GameInfoDao.CreateGame(ctx, daoReq)

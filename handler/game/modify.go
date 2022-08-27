@@ -28,6 +28,7 @@ func ModifyGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 			Desc:        req.Item.Desc,
 			ExtInfo:     nil,
 			DownKey:     req.Item.DownKey,
+			FileName:    req.Item.FileName,
 		},
 	}
 	if req.Item.Extinfo != nil {

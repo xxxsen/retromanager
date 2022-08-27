@@ -59,6 +59,7 @@ type GameItem struct {
 	Hash        string
 	DownKey     string
 	ExtInfo     []byte
+	FileName    string
 }
 
 func (item *GameItem) ToPBItem() (*gameinfo.GameInfo, error) {
@@ -73,6 +74,7 @@ func (item *GameItem) ToPBItem() (*gameinfo.GameInfo, error) {
 		Hash:        proto.String(item.Hash),
 		DownKey:     proto.String(item.DownKey),
 		Extinfo:     &gameinfo.GameExtInfo{},
+		FileName:    proto.String(item.FileName),
 	}
 	if err := proto.Unmarshal(item.ExtInfo, info.Extinfo); err != nil {
 		return nil, errs.Wrap(errs.ErrUnmarshal, "decode game extinfo", err)
@@ -97,6 +99,7 @@ type ModifyInfo struct {
 	ExtInfo     []byte
 	DownKey     *string
 	State       *uint32
+	FileName    *string
 }
 
 type ModifyGameRequest struct {

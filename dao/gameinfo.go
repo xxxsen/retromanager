@@ -15,7 +15,7 @@ import (
 )
 
 var gameinfoFields = []string{
-	"id", "platform", "display_name", "file_size", "detail", "create_time", "update_time", "hash", "extinfo", "down_key",
+	"id", "platform", "display_name", "file_size", "detail", "create_time", "update_time", "hash", "extinfo", "down_key", "file_name",
 }
 
 var GameInfoDao GameInfoService = NewGameInfoDao()
@@ -138,7 +138,7 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 	for rows.Next() {
 		item := &model.GameItem{}
 		if err := rows.Scan(&item.ID, &item.Platform, &item.DisplayName, &item.FileSize, &item.Desc, &item.CreateTime,
-			&item.UpdateTime, &item.Hash, &item.ExtInfo, &item.DownKey); err != nil {
+			&item.UpdateTime, &item.Hash, &item.ExtInfo, &item.DownKey, &item.FileName); err != nil {
 
 			return nil, errs.Wrap(errs.ErrDatabase, "scan", err)
 		}
@@ -171,6 +171,7 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 			"extinfo":      item.ExtInfo,
 			"down_key":     item.DownKey,
 			"state":        model.GameStateNormal,
+			"file_name":    item.FileName,
 		},
 	}
 	sql, args, err := builder.BuildInsert(d.Table(), data)
@@ -225,6 +226,9 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 	}
 	if req.Modify.State != nil {
 		update["state"] = *req.Modify.State
+	}
+	if req.Modify.FileName != nil {
+		update["file_name"] = *req.Modify.FileName
 	}
 	sql, args, err := builder.BuildUpdate(d.Table(), where, update)
 	if err != nil {

@@ -26,6 +26,7 @@ var validSearchField = map[string]bool{
 	"rating":       true,
 	"players":      true,
 	"genre":        true,
+	"file_name":    true,
 }
 
 var renameFieldMap = map[string]string{
@@ -34,6 +35,7 @@ var renameFieldMap = map[string]string{
 	"rating":       "extinfo.rating",
 	"display_name": es.WrapWildcard("display_name"),
 	"desc":         es.WrapWildcard("desc"),
+	"file_name":    es.WrapWildcard("file_name"),
 }
 
 func SearchGame(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {

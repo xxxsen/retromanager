@@ -2,6 +2,7 @@ create table game_info_tab (
     id bigint unsigned not null auto_increment,
     platform tinyint unsigned not null,
     display_name varchar(256) not null,
+    file_name varchar(256) not null,
     file_size bigint unsigned not null,
     detail text not null,
     create_time bigint unsigned not null,

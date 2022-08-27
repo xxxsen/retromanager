@@ -13,7 +13,9 @@ func RetryDo(ctx context.Context, repeat uint32, delimis time.Duration, fn Retry
 	for i := 0; i < int(repeat); i++ {
 		if err = fn(ctx); err != nil {
 			time.Sleep(delimis)
+			continue
 		}
+		break
 	}
 	if err != nil {
 		return err
