@@ -19,5 +19,4 @@ require (
 	golang.org/x/sys v0.0.0-20220818161305-2296e01440c6 // indirect
 	golang.org/x/xerrors v0.0.0-20220609144429-65e65417b02f // indirect
 	google.golang.org/protobuf v1.28.0
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
