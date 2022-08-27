@@ -1,11 +1,16 @@
 package server
 
 import (
+	"context"
 	"log"
 	"retromanager/server/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+)
+
+const (
+	keyServerAttach = "key_server_attach"
 )
 
 func PanicRecoverMiddleware(svr *server) gin.HandlerFunc {
@@ -17,11 +22,19 @@ func PanicRecoverMiddleware(svr *server) gin.HandlerFunc {
 	}
 }
 
+var emptyAttach = map[string]interface{}{}
+
+func GetAttach(ctx context.Context) map[string]interface{} {
+	iVal := ctx.Value(keyServerAttach)
+	if iVal == nil {
+		return emptyAttach
+	}
+	return iVal.(map[string]interface{})
+}
+
 func SupportAttachMiddleware(svr *server) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		for k, v := range svr.c.attach {
-			ctx.Set(k, v)
-		}
+		ctx.Set(keyServerAttach, svr.c.attach)
 	}
 }
 
