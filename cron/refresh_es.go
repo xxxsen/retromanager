@@ -19,7 +19,7 @@ import (
 
 func init() {
 	//每5分钟, 刷新当前时间往前偏移30分钟的数据到es, 最多2000条
-	Regist("*/1 * * * *", newRefreshESCron())
+	Regist("*/5 * * * *", newRefreshESCron())
 }
 
 const (
