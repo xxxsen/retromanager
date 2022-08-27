@@ -28,9 +28,11 @@ var validSearchField = map[string]bool{
 }
 
 var renameFieldMap = map[string]string{
-	"genre":   "extinfo.genre",
-	"players": "extinfo.players",
-	"rating":  "extinfo.rating",
+	"genre":        "extinfo.genre",
+	"players":      "extinfo.players",
+	"rating":       "extinfo.rating",
+	"display_name": es.WrapWildcard("display_name"),
+	"desc":         es.WrapWildcard("desc"),
 }
 
 func SearchGame(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {

@@ -1,7 +1,13 @@
 package es
 
 import (
+	"strings"
+
 	"github.com/olivere/elastic/v7"
+)
+
+const (
+	keySuffixWildcard = "wildcard"
 )
 
 type ISearcher interface {
@@ -72,8 +78,32 @@ func buildFilter(s *Searcher, filters []*FilterValue) {
 		return
 	}
 	for _, filter := range filters {
-		s.q.Must(elastic.NewTermQuery(filter.Field, filter.Value))
+		lst := strings.SplitN(filter.Field, "#", 2)
+		field := lst[0]
+		suffix := ""
+		if len(lst) > 1 {
+			suffix = lst[1]
+		}
+		switch suffix {
+		case keySuffixWildcard:
+			s.q.Must(elastic.NewWildcardQuery(field, "*"+filter.Value+"*"))
+		default:
+			s.q.Must(elastic.NewTermQuery(field, filter.Value))
+		}
+
 	}
+}
+
+func IsFieldValid(field string) bool {
+	return !strings.Contains(field, "#")
+}
+
+func UnWrapWildcard(field string) string {
+	return strings.TrimSuffix(field, "#"+keySuffixWildcard)
+}
+
+func WrapWildcard(field string) string {
+	return field + "#" + keySuffixWildcard
 }
 
 func FromSearchParam(param *SearchParam) *Searcher {

@@ -15,6 +15,9 @@ func fieldRename(m map[string]string, key string) string {
 }
 
 func isFieldValid(m *map[string]bool, key string) bool {
+	if !es.IsFieldValid(key) {
+		return false
+	}
 	if m == nil {
 		return true
 	}
