@@ -10,6 +10,7 @@ import (
 )
 
 type IDGetter func(v interface{}) string
+type SearchCallback func(v interface{}) error
 
 func UpsertRecord(ctx context.Context, client *es.EsClient, table string, record interface{}, idGetter IDGetter) error {
 	return UpsertRecords(ctx, client, table, []interface{}{record}, idGetter)

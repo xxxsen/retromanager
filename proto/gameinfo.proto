@@ -38,19 +38,32 @@ message ListGameResponse {
     optional uint32 total = 2; //
 }
 
+message FilterValue {
+    optional string field = 1; //
+    optional string value = 2; //
+}
+
+message RangeValue {
+    optional string field = 1; //
+    optional string left = 2; //
+    optional string right = 3; //
+}
+
+message SortValue {
+    optional string field = 1; //
+    optional bool asc = 2; //
+}
+
 message SearchParam {
-    optional uint64 game_id = 1; //
-    optional uint32 platform = 2; //
-    optional uint64 ctime_gte = 3; //
-    optional uint64 ctime_lte = 4; //
-    optional string desc = 5; //
-    optional string display_name = 6; // 
+    repeated FilterValue filter_list = 1; //
+    repeated RangeValue range_list = 2; //
+    repeated SortValue sort_list = 3; //
+    optional uint32 offset = 4; //
+    optional uint32 limit = 5; //
 }
 
 message SearchGameRequest {
     optional SearchParam param = 1; //
-    optional uint32 offset = 2; //
-    optional uint32 limit = 3; //
 }
 
 message SearchGameResponse {
