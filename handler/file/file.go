@@ -9,19 +9,22 @@ import (
 	"net/http"
 	"path/filepath"
 	"retromanager/cache"
-	"retromanager/codec"
 	"retromanager/constants"
 	"retromanager/dao"
-	"retromanager/errs"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
 	"retromanager/s3"
-	"retromanager/server"
-	"retromanager/server/log"
 	"retromanager/utils"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/xxxsen/errs"
+	"github.com/xxxsen/naivesvr"
+
+	"github.com/xxxsen/naivesvr/log"
+
+	"github.com/xxxsen/naivesvr/codec"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yitter/idgenerator-go/idgen"
@@ -48,7 +51,7 @@ func ExtNameChecker(exts ...string) TypeCheckFunc {
 		if _, ok := valid[ext]; ok {
 			return nil
 		}
-		return errs.New(constants.ErrParam, "not support ext:%s", ext)
+		return errs.New(errs.ErrParam, "not support ext:%s", ext)
 	}
 }
 
@@ -82,12 +85,12 @@ func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 	header := req.File
 	file, err := header.Open()
 	if err != nil {
-		return nil, false, errs.Wrap(constants.ErrParam, "open file fail", err)
+		return nil, false, errs.Wrap(errs.ErrParam, "open file fail", err)
 	}
 	md5 := req.MD5
 	if header.Size > constants.MaxPostUploadSize {
 		file.Close()
-		return nil, false, errs.New(constants.ErrParam, "file size out of limit")
+		return nil, false, errs.New(errs.ErrParam, "file size out of limit")
 	}
 	return &FileUploadMeta{
 		Reader:   file,
@@ -100,7 +103,7 @@ func (f *S3SmallFileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 
 func (f *S3SmallFileUploader) OnUpload(ctx *gin.Context, meta *FileUploadMeta) error {
 	if err := s3.Client.Upload(ctx, meta.DownKey, meta.Reader, meta.FileSize, meta.MD5); err != nil {
-		return errs.Wrap(constants.ErrS3, "upload to s3 fail", err)
+		return errs.Wrap(errs.ErrS3, "upload to s3 fail", err)
 	}
 	return nil
 }
@@ -132,7 +135,7 @@ func (f *S3FileDownloader) BeforeDownload(ctx *gin.Context, request interface{})
 func (f *S3FileDownloader) OnDownload(ctx *gin.Context, meta *FileDownloadMeta) error {
 	reader, err := s3.Client.Download(ctx, meta.DownKey)
 	if err != nil {
-		return errs.Wrap(constants.ErrS3, "create download stream fail", err)
+		return errs.Wrap(errs.ErrS3, "create download stream fail", err)
 	}
 	defer reader.Close()
 	contentType := meta.ContentType
@@ -145,10 +148,10 @@ func (f *S3FileDownloader) OnDownload(ctx *gin.Context, meta *FileDownloadMeta) 
 	writer.Header().Set("Content-Type", contentType)
 	sz, err := io.Copy(ctx.Writer, reader)
 	if err != nil {
-		return errs.Wrap(constants.ErrIO, "copy stream fail", err)
+		return errs.Wrap(errs.ErrIO, "copy stream fail", err)
 	}
 	if sz != int64(meta.FileSize) {
-		return errs.New(constants.ErrIO, "io size not match, need %d, write:%d", meta.FileSize, sz)
+		return errs.New(errs.ErrIO, "io size not match, need %d, write:%d", meta.FileSize, sz)
 	}
 	return nil
 }
@@ -160,7 +163,7 @@ func (f *S3FileDownloader) AfterDownload(ctx *gin.Context, meta *FileDownloadMet
 	log.GetLogger(ctx).With(zap.String("path", ctx.Request.URL.Path), zap.Error(err)).Error("file download fail")
 }
 
-func CommonFilePostUpload(uploader ISmallFileUploader) server.ProcessFunc {
+func CommonFilePostUpload(uploader ISmallFileUploader) naivesvr.ProcessFunc {
 	return func(ctx *gin.Context, req interface{}) (int, errs.IError, interface{}) {
 		caller := func() (interface{}, errs.IError) {
 			meta, needUpload, err := uploader.BeforeUpload(ctx, req)
@@ -170,16 +173,16 @@ func CommonFilePostUpload(uploader ISmallFileUploader) server.ProcessFunc {
 				}
 			}()
 			if err != nil {
-				return nil, errs.Wrap(constants.ErrServiceInternal, "before post upload fail", err)
+				return nil, errs.Wrap(errs.ErrServiceInternal, "before post upload fail", err)
 			}
 			if needUpload {
 				if err := uploader.OnUpload(ctx, meta); err != nil {
-					return nil, errs.Wrap(constants.ErrStorage, "on upload fail", err)
+					return nil, errs.Wrap(errs.ErrStorage, "on upload fail", err)
 				}
 			}
 			rsp, err := uploader.AfterUpload(ctx, needUpload, meta)
 			if err != nil {
-				return nil, errs.Wrap(constants.ErrServiceInternal, "after upload fail", err)
+				return nil, errs.Wrap(errs.ErrServiceInternal, "after upload fail", err)
 			}
 			return rsp, nil
 		}
@@ -188,7 +191,7 @@ func CommonFilePostUpload(uploader ISmallFileUploader) server.ProcessFunc {
 	}
 }
 
-func CommonFileDownload(downloader IFileDownloader) server.ProcessFunc {
+func CommonFileDownload(downloader IFileDownloader) naivesvr.ProcessFunc {
 	return func(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
 		caller := func() error {
 			meta, err := downloader.BeforeDownload(ctx, request)
@@ -252,7 +255,7 @@ func (uploader *FileUploader) BeforeUpload(ctx *gin.Context, request interface{}
 	}
 	meta.DownKey = fmt.Sprintf("%d_%s", uploader.typ, meta.DownKey)
 	if err := uploader.ckfn(meta); err != nil {
-		return nil, false, errs.Wrap(constants.ErrParam, "meta check not pass", err)
+		return nil, false, errs.Wrap(errs.ErrParam, "meta check not pass", err)
 	}
 	return meta, true, nil
 }
@@ -267,7 +270,7 @@ func (uploader *FileUploader) AfterUpload(ctx *gin.Context, realUpload bool, met
 			DownKey:    meta.DownKey,
 		},
 	}); err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "insert image to db fail", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "insert image to db fail", err)
 	}
 	return &gameinfo.FileUploadResponse{
 		DownKey: proto.String(meta.DownKey),
@@ -303,10 +306,10 @@ func (d *FileDownloader) BeforeDownload(ctx *gin.Context, request interface{}) (
 		return daoRsp.Item, true, nil
 	})
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrStorage, "cache get file meta fail", err)
+		return nil, errs.Wrap(errs.ErrStorage, "cache get file meta fail", err)
 	}
 	if !exist {
-		return nil, errs.New(constants.ErrNotFound, "not found file meta")
+		return nil, errs.New(errs.ErrNotFound, "not found file meta")
 	}
 	fileinfo := ifileinfo.(*model.FileItem)
 	return &FileDownloadMeta{

@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"retromanager/constants"
 	"retromanager/dao"
-	"retromanager/errs"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
 	"retromanager/s3"
+
+	"github.com/xxxsen/errs"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xxxsen/runner"
@@ -23,7 +23,7 @@ const (
 func Meta(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
 	req := request.(*gameinfo.GetFileMetaRequest)
 	if len(req.DownKey) == 0 || len(req.DownKey) > maxListMetaSizePerRequest {
-		return http.StatusOK, errs.New(constants.ErrParam, "invalid down key size:%d", len(req.DownKey)), nil
+		return http.StatusOK, errs.New(errs.ErrParam, "invalid down key size:%d", len(req.DownKey)), nil
 	}
 	daoRsp, err := dao.FileInfoDao.ListFile(ctx, &model.ListFileRequest{
 		Query: &model.ListFileQuery{
@@ -33,7 +33,7 @@ func Meta(ctx *gin.Context, request interface{}) (int, errs.IError, interface{})
 		Limit:  uint32(len(req.DownKey)),
 	})
 	if err != nil {
-		return http.StatusOK, errs.Wrap(constants.ErrDatabase, "read file list fail", err), nil
+		return http.StatusOK, errs.Wrap(errs.ErrDatabase, "read file list fail", err), nil
 	}
 	metalist := fileinfo2pbmeta(req.GetDownKey(), daoRsp.List)
 	_ = buildS3Info(ctx, metalist)
@@ -52,7 +52,7 @@ func buildS3Info(ctx context.Context, metalist []*gameinfo.FileItem) error {
 		run.Add(fmt.Sprintf("fetch_%s", meta.GetDownKey()), func(ctx context.Context) error {
 			info, err := s3.Client.GetFileInfo(ctx, meta.GetDownKey())
 			if err != nil {
-				return errs.Wrap(constants.ErrS3, "read key fail", err).WithDebugMsg("key:%s", meta.GetDownKey())
+				return errs.Wrap(errs.ErrS3, "read key fail", err).WithDebugMsg("key:%s", meta.GetDownKey())
 			}
 			meta.LowLevelInfo = &gameinfo.FileMetaLowLevelInfo{
 				Etag: info.ETag,

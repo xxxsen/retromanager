@@ -2,9 +2,9 @@ package utils
 
 import (
 	"encoding/base64"
-	"retromanager/constants"
-	"retromanager/errs"
 	"retromanager/proto/retromanager/gameinfo"
+
+	"github.com/xxxsen/errs"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -24,7 +24,7 @@ func DecodeUploadID(id string) (*gameinfo.UploadIdCtx, error) {
 func encodeMessage(msg proto.Message) (string, error) {
 	raw, err := proto.Marshal(msg)
 	if err != nil {
-		return "", errs.Wrap(constants.ErrMarshal, "pb marshal fail", err)
+		return "", errs.Wrap(errs.ErrMarshal, "pb marshal fail", err)
 	}
 	return base64.StdEncoding.EncodeToString(raw), nil
 }
@@ -32,10 +32,10 @@ func encodeMessage(msg proto.Message) (string, error) {
 func decodeMessage(id string, dst proto.Message) error {
 	raw, err := base64.StdEncoding.DecodeString(id)
 	if err != nil {
-		return errs.Wrap(constants.ErrUnmarshal, "base64 decode fail", err)
+		return errs.Wrap(errs.ErrUnmarshal, "base64 decode fail", err)
 	}
 	if err := proto.Unmarshal(raw, dst); err != nil {
-		return errs.Wrap(constants.ErrUnmarshal, "proto decode fail", err)
+		return errs.Wrap(errs.ErrUnmarshal, "proto decode fail", err)
 	}
 	return nil
 }

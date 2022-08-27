@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"retromanager/constants"
-	"retromanager/errs"
 	"retromanager/es"
 	"retromanager/proto/retromanager/gameinfo"
+
+	"github.com/xxxsen/errs"
 )
 
 func fieldRename(m map[string]string, key string) string {
@@ -37,7 +37,7 @@ func PBSearchParamsToEsSearchParams(s *gameinfo.SearchParam, renameMap map[strin
 	}
 	for _, item := range s.FilterList {
 		if !isFieldValid(validFieldMap, item.GetField()) {
-			return nil, errs.New(constants.ErrParam, "filter field not allow, field:%s", item.GetField())
+			return nil, errs.New(errs.ErrParam, "filter field not allow, field:%s", item.GetField())
 		}
 		p.FilterList = append(p.FilterList, &es.FilterValue{
 			Field: fieldRename(renameMap, item.GetField()),
@@ -46,7 +46,7 @@ func PBSearchParamsToEsSearchParams(s *gameinfo.SearchParam, renameMap map[strin
 	}
 	for _, item := range s.RangeList {
 		if !isFieldValid(validFieldMap, item.GetField()) {
-			return nil, errs.New(constants.ErrParam, "range field not allow, field:%s", item.GetField())
+			return nil, errs.New(errs.ErrParam, "range field not allow, field:%s", item.GetField())
 		}
 		p.RangeList = append(p.RangeList, &es.RangeValue{
 			Field: fieldRename(renameMap, item.GetField()),
@@ -56,7 +56,7 @@ func PBSearchParamsToEsSearchParams(s *gameinfo.SearchParam, renameMap map[strin
 	}
 	for _, item := range s.SortList {
 		if !isFieldValid(validFieldMap, item.GetField()) {
-			return nil, errs.New(constants.ErrParam, "sort field not allow, field:%s", item.GetField())
+			return nil, errs.New(errs.ErrParam, "sort field not allow, field:%s", item.GetField())
 		}
 		p.SortList = append(p.SortList, &es.SortValue{
 			Field: fieldRename(renameMap, item.GetField()),

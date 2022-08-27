@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"reflect"
-	"retromanager/constants"
-	"retromanager/errs"
 	"time"
+
+	"github.com/xxxsen/errs"
 
 	"github.com/olivere/elastic/v7"
 )
@@ -40,10 +40,10 @@ func New(opts ...Option) (*EsClient, error) {
 		opt(c)
 	}
 	if len(c.urls) == 0 {
-		return nil, errs.New(constants.ErrParam, "no es host found")
+		return nil, errs.New(errs.ErrParam, "no es host found")
 	}
 	if len(c.user) == 0 || len(c.password) == 0 {
-		return nil, errs.New(constants.ErrParam, "should set user/password")
+		return nil, errs.New(errs.ErrParam, "should set user/password")
 	}
 	httpClient := &http.Client{
 		Timeout: c.timeout,
@@ -54,12 +54,12 @@ func New(opts ...Option) (*EsClient, error) {
 		elastic.SetHttpClient(httpClient),
 	)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrES, "init es client fail", err)
+		return nil, errs.Wrap(errs.ErrES, "init es client fail", err)
 	}
 	for _, host := range c.urls {
 		_, _, err := client.Ping(host).Do(context.Background())
 		if err != nil {
-			return nil, errs.Wrap(constants.ErrES, "ping host fail", err).WithDebugMsg("host:%s", host)
+			return nil, errs.Wrap(errs.ErrES, "ping host fail", err).WithDebugMsg("host:%s", host)
 		}
 	}
 	return &EsClient{Client: client}, nil
@@ -71,7 +71,7 @@ func GetSearchResult(ctx context.Context, client *EsClient, searcher ISearcher) 
 	ss = ss.Query(esQuery)
 	countRes, err := ss.From(0).Size(0).Do(ctx)
 	if err != nil {
-		return nil, 0, errs.Wrap(constants.ErrES, "search for total fail", err)
+		return nil, 0, errs.Wrap(errs.ErrES, "search for total fail", err)
 	}
 	total := uint32(countRes.TotalHits())
 	if sorter := searcher.BuildSorter(); len(sorter) > 0 {
@@ -79,7 +79,7 @@ func GetSearchResult(ctx context.Context, client *EsClient, searcher ISearcher) 
 	}
 	results, err := ss.From(0).Size(searcher.Offset() + searcher.Limit()).TrackTotalHits(false).Do(ctx)
 	if err != nil {
-		return nil, 0, errs.Wrap(constants.ErrES, "search for data fail", err)
+		return nil, 0, errs.Wrap(errs.ErrES, "search for data fail", err)
 	}
 	elemType := reflect.TypeOf(searcher.ObjectPtr()).Elem()
 	hits := results.Hits.Hits
@@ -93,7 +93,7 @@ func GetSearchResult(ctx context.Context, client *EsClient, searcher ISearcher) 
 		jsonData, _ := hit.Source.MarshalJSON()
 		err := json.Unmarshal(jsonData, item)
 		if err != nil {
-			return nil, 0, errs.Wrap(constants.ErrES, "decode json fail", err)
+			return nil, 0, errs.Wrap(errs.ErrES, "decode json fail", err)
 		}
 		rs = append(rs, item)
 	}

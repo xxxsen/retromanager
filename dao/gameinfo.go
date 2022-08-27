@@ -4,11 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"retromanager/constants"
 	"retromanager/db"
-	"retromanager/errs"
 	"retromanager/model"
 	"time"
+
+	"github.com/xxxsen/errs"
 
 	"github.com/didi/gendry/builder"
 	"google.golang.org/protobuf/proto"
@@ -59,21 +59,21 @@ func (d *gameinfoImpl) buildTotal(ctx context.Context, where map[string]interfac
 	delete(where, "_orderby")
 	sql, args, err := builder.BuildSelect(d.Table(), where, []string{"count(*)"})
 	if err != nil {
-		return 0, errs.Wrap(constants.ErrParam, "build", err)
+		return 0, errs.Wrap(errs.ErrParam, "build", err)
 	}
 	rows, err := d.Client().QueryContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errs.Wrap(constants.ErrDatabase, "query total", err)
+		return 0, errs.Wrap(errs.ErrDatabase, "query total", err)
 	}
 	defer rows.Close()
 	var total uint32
 	for rows.Next() {
 		if err := rows.Scan(&total); err != nil {
-			return 0, errs.Wrap(constants.ErrDatabase, "scan total", err)
+			return 0, errs.Wrap(errs.ErrDatabase, "scan total", err)
 		}
 	}
 	if err := rows.Err(); err != nil {
-		return 0, errs.Wrap(constants.ErrDatabase, "scan total", err)
+		return 0, errs.Wrap(errs.ErrDatabase, "scan total", err)
 	}
 	return total, nil
 }
@@ -126,12 +126,12 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 
 	sql, args, err := builder.BuildSelect(d.Table(), where, d.Fields())
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrParam, "build select", err)
+		return nil, errs.Wrap(errs.ErrParam, "build select", err)
 	}
 	client := d.Client()
 	rows, err := client.QueryContext(ctx, sql, args...)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "query ctx fail", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "query ctx fail", err)
 	}
 	defer rows.Close()
 	lst := make([]*model.GameItem, 0, req.Limit)
@@ -140,18 +140,18 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 		if err := rows.Scan(&item.ID, &item.Platform, &item.DisplayName, &item.FileSize, &item.Desc, &item.CreateTime,
 			&item.UpdateTime, &item.Hash, &item.ExtInfo, &item.DownKey); err != nil {
 
-			return nil, errs.Wrap(constants.ErrDatabase, "scan", err)
+			return nil, errs.Wrap(errs.ErrDatabase, "scan", err)
 		}
 		lst = append(lst, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "scan", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "scan", err)
 	}
 	var total uint32
 	if req.NeedTotal {
 		total, err = d.buildTotal(ctx, where)
 		if err != nil {
-			return nil, errs.Wrap(constants.ErrDatabase, "build total", err)
+			return nil, errs.Wrap(errs.ErrDatabase, "build total", err)
 		}
 	}
 	return &model.ListGameResponse{List: lst, Total: total}, nil
@@ -175,15 +175,15 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 	}
 	sql, args, err := builder.BuildInsert(d.Table(), data)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrParam, "build insert", err)
+		return nil, errs.Wrap(errs.ErrParam, "build insert", err)
 	}
 	rs, err := d.Client().ExecContext(ctx, sql, args...)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "exec insert", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "exec insert", err)
 	}
 	id, err := rs.LastInsertId()
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "get insert id", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "get insert id", err)
 	}
 	AsyncNotify(ctx, d.Table(), model.ActionCreate, uint64(id), d.notifyers...)
 	return &model.CreateGameResponse{GameId: uint64(id)}, nil
@@ -191,7 +191,7 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 
 func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequest) (*model.ModifyGameResponse, error) {
 	if req.Modify == nil {
-		return nil, errs.New(constants.ErrParam, "nil modify")
+		return nil, errs.New(errs.ErrParam, "nil modify")
 	}
 	where := map[string]interface{}{
 		"id": req.GameID,
@@ -228,15 +228,15 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 	}
 	sql, args, err := builder.BuildUpdate(d.Table(), where, update)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrParam, "build update", err)
+		return nil, errs.Wrap(errs.ErrParam, "build update", err)
 	}
 	rs, err := d.Client().ExecContext(ctx, sql, args...)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "exec update", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "exec update", err)
 	}
 	cnt, err := rs.RowsAffected()
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "get affect rows fail", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "get affect rows fail", err)
 	}
 	AsyncNotify(ctx, d.Table(), model.ActionModify, req.GameID, d.notifyers...)
 	return &model.ModifyGameResponse{AffectRows: cnt}, nil
@@ -252,7 +252,7 @@ func (d *gameinfoImpl) DeleteGame(ctx context.Context, req *model.DeleteGameRequ
 	}
 	daoRsp, err := d.ModifyGame(ctx, daoReq)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "exec delete", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "exec delete", err)
 	}
 	return &model.DeleteGameResponse{AffectRows: daoRsp.AffectRows}, nil
 }

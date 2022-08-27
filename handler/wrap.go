@@ -3,16 +3,17 @@ package handler
 import (
 	"net/http"
 	"reflect"
-	"retromanager/codec"
-	"retromanager/errs"
-	"retromanager/server"
-	"retromanager/server/log"
+
+	"github.com/xxxsen/errs"
+	"github.com/xxxsen/naivesvr"
+	"github.com/xxxsen/naivesvr/codec"
+	"github.com/xxxsen/naivesvr/log"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func WrapHandler(ptr interface{}, cc codec.ICodec, pfunc server.ProcessFunc) gin.HandlerFunc {
+func WrapHandler(ptr interface{}, cc codec.ICodec, pfunc naivesvr.ProcessFunc) gin.HandlerFunc {
 	creator := func() interface{} {
 		if ptr == nil {
 			return nil
@@ -21,7 +22,7 @@ func WrapHandler(ptr interface{}, cc codec.ICodec, pfunc server.ProcessFunc) gin
 		val := reflect.New(typ.Elem())
 		return val.Interface()
 	}
-	return wrapHandler(server.NewHandler(creator, cc, pfunc))
+	return wrapHandler(naivesvr.NewHandler(creator, cc, pfunc))
 }
 
 func finderr(args ...interface{}) (string, errs.IError, bool) {
@@ -36,7 +37,7 @@ func finderr(args ...interface{}) (string, errs.IError, bool) {
 	return "", nil, false
 }
 
-func wrapHandler(h server.IHandler) gin.HandlerFunc {
+func wrapHandler(h naivesvr.IHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var statuscode int
 		var derr errs.IError

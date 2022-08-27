@@ -3,12 +3,12 @@ package game
 import (
 	"fmt"
 	"net/http"
-	"retromanager/constants"
 	"retromanager/dao"
-	"retromanager/errs"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
 	"time"
+
+	"github.com/xxxsen/errs"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/protobuf/proto"
@@ -45,14 +45,14 @@ func CreateGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 	rsp := &gameinfo.CreateGameResponse{}
 
 	if err := checkCreate(req); err != nil {
-		return http.StatusOK, errs.Wrap(constants.ErrParam, "invalid params", err), nil
+		return http.StatusOK, errs.Wrap(errs.ErrParam, "invalid params", err), nil
 	}
 	item := req.GetItem()
 
 	now := uint64(time.Now().UnixNano() / int64(time.Millisecond))
 	extinfo, err := proto.Marshal(item.GetExtinfo())
 	if err != nil {
-		return http.StatusOK, errs.Wrap(constants.ErrMarshal, "encode ext info fail", err), nil
+		return http.StatusOK, errs.Wrap(errs.ErrMarshal, "encode ext info fail", err), nil
 	}
 	daoReq := &model.CreateGameRequest{
 		Item: &model.GameItem{
@@ -69,7 +69,7 @@ func CreateGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 	}
 	daoRsp, err := dao.GameInfoDao.CreateGame(ctx, daoReq)
 	if err != nil {
-		return http.StatusOK, errs.Wrap(constants.ErrDatabase, "create game fail", err), nil
+		return http.StatusOK, errs.Wrap(errs.ErrDatabase, "create game fail", err), nil
 	}
 	rsp.GameId = proto.Uint64(daoRsp.GameId)
 	return http.StatusOK, nil, rsp

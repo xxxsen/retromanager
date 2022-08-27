@@ -15,10 +15,10 @@ import (
 	hconfig "retromanager/handler/config"
 	"retromanager/idgen"
 	"retromanager/s3"
-	"retromanager/server"
 	"time"
 
-	"retromanager/server/log"
+	"github.com/xxxsen/naivesvr"
+	"github.com/xxxsen/naivesvr/log"
 
 	"go.uber.org/zap"
 )
@@ -69,10 +69,10 @@ func main() {
 	//start cronjob
 	cron.Start()
 
-	svr, err := server.NewServer(
-		server.WithAddress(c.ServerInfo.Address),
-		server.WithHandlerRegister(handler.OnRegist),
-		server.WithAttach(constants.KeyConfigAttach, initServiceConfig(c)),
+	svr, err := naivesvr.NewServer(
+		naivesvr.WithAddress(c.ServerInfo.Address),
+		naivesvr.WithHandlerRegister(handler.OnRegist),
+		naivesvr.WithAttach(constants.KeyConfigAttach, initServiceConfig(c)),
 	)
 	if err != nil {
 		logger.With(zap.Error(err)).Fatal("init server fail")

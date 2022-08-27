@@ -1,11 +1,12 @@
 package handler
 
 import (
-	"retromanager/codec"
 	"retromanager/handler/file"
 	"retromanager/handler/file/bigfile"
 	"retromanager/handler/game"
 	"retromanager/proto/retromanager/gameinfo"
+
+	"github.com/xxxsen/naivesvr/codec"
 
 	"github.com/gin-gonic/gin"
 )

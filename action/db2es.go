@@ -8,8 +8,9 @@ import (
 	"retromanager/esservice"
 	"retromanager/model"
 	"retromanager/retry"
-	"retromanager/server/log"
 	"time"
+
+	"github.com/xxxsen/naivesvr/log"
 
 	"go.uber.org/zap"
 )

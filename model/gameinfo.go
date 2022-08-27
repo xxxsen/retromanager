@@ -1,9 +1,9 @@
 package model
 
 import (
-	"retromanager/constants"
-	"retromanager/errs"
 	"retromanager/proto/retromanager/gameinfo"
+
+	"github.com/xxxsen/errs"
 
 	"google.golang.org/protobuf/proto"
 )
@@ -75,7 +75,7 @@ func (item *GameItem) ToPBItem() (*gameinfo.GameInfo, error) {
 		Extinfo:     &gameinfo.GameExtInfo{},
 	}
 	if err := proto.Unmarshal(item.ExtInfo, info.Extinfo); err != nil {
-		return nil, errs.Wrap(constants.ErrUnmarshal, "decode game extinfo", err)
+		return nil, errs.Wrap(errs.ErrUnmarshal, "decode game extinfo", err)
 	}
 	return info, nil
 }

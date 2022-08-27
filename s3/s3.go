@@ -7,8 +7,8 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"retromanager/constants"
-	"retromanager/errs"
+
+	"github.com/xxxsen/errs"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -37,7 +37,7 @@ func toBase64MD5CheckSum(val string) *string {
 func InitGlobal(opts ...Option) error {
 	client, err := New(opts...)
 	if err != nil {
-		return errs.Wrap(constants.ErrS3, "init s3", err)
+		return errs.Wrap(errs.ErrS3, "init s3", err)
 	}
 	Client = client
 	return nil
@@ -51,7 +51,7 @@ func New(opts ...Option) (*s3Client, error) {
 		opt(c)
 	}
 	if len(c.bucket) == 0 {
-		return nil, errs.New(constants.ErrParam, "nil bucket name")
+		return nil, errs.New(errs.ErrParam, "nil bucket name")
 	}
 
 	credit := credentials.NewStaticCredentials(c.secretId, c.secretKey, "")
@@ -63,7 +63,7 @@ func New(opts ...Option) (*s3Client, error) {
 		Region:      proto.String("cn"),
 	})
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrS3, "init session fail", err)
+		return nil, errs.Wrap(errs.ErrS3, "init session fail", err)
 	}
 	client := s3.New(sess)
 	return &s3Client{c: c, client: client, sess: sess}, nil
@@ -75,7 +75,7 @@ func (c *s3Client) Download(ctx context.Context, fileid string) (io.ReadCloser, 
 		Key:    aws.String(fileid),
 	})
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrS3, "get obj fail", err)
+		return nil, errs.Wrap(errs.ErrS3, "get obj fail", err)
 	}
 	return output.Body, nil
 }
@@ -91,7 +91,7 @@ func (c *s3Client) Upload(ctx context.Context, fileid string, r io.ReadSeeker, s
 	}
 	_, err := c.client.PutObject(input)
 	if err != nil {
-		return errs.Wrap(constants.ErrS3, "write obj fail", err)
+		return errs.Wrap(errs.ErrS3, "write obj fail", err)
 	}
 	return nil
 }
@@ -102,7 +102,7 @@ func (c *s3Client) Remove(ctx context.Context, fileid string) error {
 		Key:    aws.String(fileid),
 	})
 	if err != nil {
-		return errs.Wrap(constants.ErrS3, "delete fail", err)
+		return errs.Wrap(errs.ErrS3, "delete fail", err)
 	}
 	return nil
 }
@@ -113,7 +113,7 @@ func (c *s3Client) BeginUpload(ctx context.Context, fileid string) (string, erro
 		Key:    aws.String(fileid),
 	})
 	if err != nil {
-		return "", errs.Wrap(constants.ErrS3, "create multi part upload fail", err)
+		return "", errs.Wrap(errs.ErrS3, "create multi part upload fail", err)
 	}
 	return *output.UploadId, nil
 }
@@ -131,7 +131,7 @@ func (c *s3Client) UploadPart(ctx context.Context, fileid string, uploadid strin
 	}
 	_, err := c.client.UploadPart(input)
 	if err != nil {
-		return errs.Wrap(constants.ErrS3, "put part fail", err)
+		return errs.Wrap(errs.ErrS3, "put part fail", err)
 	}
 	return nil
 }
@@ -144,7 +144,7 @@ func (c *s3Client) listParts(ctx context.Context, fileid string, uploadid string
 		UploadId:            aws.String(uploadid),
 	})
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrS3, "list part fail", err)
+		return nil, errs.Wrap(errs.ErrS3, "list part fail", err)
 	}
 	return output.Parts, nil
 }
@@ -170,7 +170,7 @@ func (c *s3Client) EndUpload(ctx context.Context, fileid string, uploadid string
 		return err
 	}
 	if len(parts) != partcount {
-		return errs.New(constants.ErrParam, "part count not match, need:%d, get:%d", partcount, len(parts))
+		return errs.New(errs.ErrParam, "part count not match, need:%d, get:%d", partcount, len(parts))
 	}
 	_, err = c.client.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
 		Bucket: aws.String(c.c.bucket),
@@ -181,7 +181,7 @@ func (c *s3Client) EndUpload(ctx context.Context, fileid string, uploadid string
 		UploadId: aws.String(uploadid),
 	})
 	if err != nil {
-		return errs.Wrap(constants.ErrS3, "finish upload fail", err)
+		return errs.Wrap(errs.ErrS3, "finish upload fail", err)
 	}
 	return nil
 }
@@ -193,7 +193,7 @@ func (c *s3Client) DiscardMultiPartUpload(ctx context.Context, fileid string, up
 		UploadId: aws.String(uploadid),
 	})
 	if err != nil {
-		return errs.Wrap(constants.ErrS3, "abort multipart upload fail", err)
+		return errs.Wrap(errs.ErrS3, "abort multipart upload fail", err)
 	}
 	return nil
 }
@@ -208,7 +208,7 @@ func (c *s3Client) GetFileInfo(ctx context.Context, fileid string) (*ObjectMetaI
 		Key:    aws.String(fileid),
 	})
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrS3, "get obj info from s3 fail", err)
+		return nil, errs.Wrap(errs.ErrS3, "get obj info from s3 fail", err)
 	}
 	return &ObjectMetaInfo{
 		ETag: out.ETag,

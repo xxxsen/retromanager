@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"retromanager/config"
-	"retromanager/constants"
-	"retromanager/errs"
+
+	"github.com/xxxsen/errs"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -18,10 +18,10 @@ var (
 func InitGameDB(c *config.DBConfig) error {
 	client, err := sql.Open("mysql", buildSqlDataSource(c))
 	if err != nil {
-		return errs.Wrap(constants.ErrDatabase, "open db fail", err)
+		return errs.Wrap(errs.ErrDatabase, "open db fail", err)
 	}
 	if err := client.Ping(); err != nil {
-		return errs.Wrap(constants.ErrDatabase, "ping fail", err)
+		return errs.Wrap(errs.ErrDatabase, "ping fail", err)
 	}
 	dbGameInfo = client
 	return nil
@@ -38,10 +38,10 @@ func buildSqlDataSource(c *config.DBConfig) string {
 func InitFileDB(c *config.DBConfig) error {
 	client, err := sql.Open("mysql", buildSqlDataSource(c))
 	if err != nil {
-		return errs.Wrap(constants.ErrDatabase, "open db fail", err)
+		return errs.Wrap(errs.ErrDatabase, "open db fail", err)
 	}
 	if err := client.Ping(); err != nil {
-		return errs.Wrap(constants.ErrDatabase, "ping fail", err)
+		return errs.Wrap(errs.ErrDatabase, "ping fail", err)
 	}
 	dbMediaInfo = client
 	return nil

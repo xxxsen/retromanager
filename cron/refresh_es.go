@@ -4,15 +4,16 @@ import (
 	"context"
 	"fmt"
 	"retromanager/cache"
-	"retromanager/constants"
 	"retromanager/dao"
-	"retromanager/errs"
 	"retromanager/es"
 	"retromanager/esservice"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
-	"retromanager/server/log"
 	"time"
+
+	"github.com/xxxsen/naivesvr/log"
+
+	"github.com/xxxsen/errs"
 
 	"go.uber.org/zap"
 )
@@ -53,10 +54,10 @@ func (c *refreshESCron) Run(ctx context.Context) error {
 		Limit:     maxScanPerBatch,
 	})
 	if err != nil {
-		return errs.Wrap(constants.ErrDatabase, "list db fail", err)
+		return errs.Wrap(errs.ErrDatabase, "list db fail", err)
 	}
 	if err := c.doBusi(ctx, rsp.List); err != nil {
-		return errs.Wrap(constants.ErrServiceInternal, "do refresh logic fail", err)
+		return errs.Wrap(errs.ErrServiceInternal, "do refresh logic fail", err)
 	}
 	return nil
 }
@@ -76,7 +77,7 @@ func (c *refreshESCron) doBusi(ctx context.Context, items []*model.GameItem) err
 		}
 		pbitem, err := item.ToPBItem()
 		if err != nil {
-			return errs.Wrap(constants.ErrUnknown, "translate to pb item fail", err)
+			return errs.Wrap(errs.ErrUnknown, "translate to pb item fail", err)
 		}
 		needWriteList = append(needWriteList, pbitem)
 	}

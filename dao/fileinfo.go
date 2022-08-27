@@ -3,10 +3,10 @@ package dao
 import (
 	"context"
 	"database/sql"
-	"retromanager/constants"
 	"retromanager/db"
-	"retromanager/errs"
 	"retromanager/model"
+
+	"github.com/xxxsen/errs"
 
 	"github.com/didi/gendry/builder"
 )
@@ -52,11 +52,11 @@ func (d *fileInfoDaoImpl) ListFile(ctx context.Context, req *model.ListFileReque
 	}
 	sql, args, err := builder.BuildSelect(d.Table(), where, d.Fields())
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrParam, "build select", err)
+		return nil, errs.Wrap(errs.ErrParam, "build select", err)
 	}
 	rows, err := d.Client().QueryContext(ctx, sql, args...)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "select fail", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "select fail", err)
 	}
 	defer rows.Close()
 	rs := make([]*model.FileItem, 0, req.Limit)
@@ -65,12 +65,12 @@ func (d *fileInfoDaoImpl) ListFile(ctx context.Context, req *model.ListFileReque
 		if err := rows.Scan(&item.Id, &item.FileName,
 			&item.Hash, &item.FileSize, &item.CreateTime,
 			&item.DownKey); err != nil {
-			return nil, errs.Wrap(constants.ErrDatabase, "scan fail", err)
+			return nil, errs.Wrap(errs.ErrDatabase, "scan fail", err)
 		}
 		rs = append(rs, item)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "scan fail", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "scan fail", err)
 	}
 	return &model.ListFileResponse{List: rs}, nil
 }
@@ -105,11 +105,11 @@ func (d *fileInfoDaoImpl) CreateFile(ctx context.Context, req *model.CreateFileR
 	}
 	sql, args, err := builder.BuildInsertIgnore(d.Table(), data)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrParam, "build insert", err)
+		return nil, errs.Wrap(errs.ErrParam, "build insert", err)
 	}
 	_, err = d.Client().ExecContext(ctx, sql, args...)
 	if err != nil {
-		return nil, errs.Wrap(constants.ErrDatabase, "insert fail", err)
+		return nil, errs.Wrap(errs.ErrDatabase, "insert fail", err)
 	}
 	return &model.CreateFileResponse{}, nil
 }
