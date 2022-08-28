@@ -1,19 +1,13 @@
 package client
 
+import "retromanager/proto/retromanager/gameinfo"
+
 type FileMeta struct {
 	Path    string
 	Name    string
 	Size    int64
 	MD5     string
 	DownKey string
-}
-
-type UploadRomRequest struct {
-	File string
-}
-
-type UploadRomResponse struct {
-	Meta *FileMeta
 }
 
 type UploadImageRequest struct {
@@ -39,3 +33,6 @@ type UploadFileRequest struct {
 type UploadFileResponse struct {
 	Meta *FileMeta
 }
+
+type CreateGameRequest = gameinfo.CreateGameRequest
+type CreateGameResponse = gameinfo.CreateGameResponse

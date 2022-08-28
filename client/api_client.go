@@ -90,7 +90,7 @@ func (c *Client) responseByJson(ctx context.Context, req *http.Request, rsp inte
 	return nil
 }
 
-func (c *Client) UploadVideo(ctx context.Context, req *UploadImageRequest) (*UploadImageResponse, error) {
+func (c *Client) UploadVideo(ctx context.Context, req *UploadVideoRequest) (*UploadVideoResponse, error) {
 	st, err := os.Stat(req.File)
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrIO, "stat file fail", err)
@@ -100,7 +100,7 @@ func (c *Client) UploadVideo(ctx context.Context, req *UploadImageRequest) (*Upl
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrServiceInternal, "upload by api fail", err).WithDebugMsg("api:%s", api)
 	}
-	return &UploadImageResponse{
+	return &UploadVideoResponse{
 		Meta: meta,
 	}, nil
 }
@@ -285,7 +285,14 @@ func (c *Client) UploadFile(ctx context.Context, req *UploadFileRequest) (*Uploa
 	return &UploadFileResponse{Meta: meta}, nil
 }
 
-func (c *Client) CreateGame(ctx context.Context, req *gameinfo.CreateGameRequest) (*gameinfo.CreateGameResponse, error) {
-	//TODO: finish it
-	panic(1)
+func (c *Client) CreateGame(ctx context.Context, req *CreateGameRequest) (*CreateGameResponse, error) {
+	rsp := &CreateGameResponse{}
+	httpReq, err := c.createJsonRequest(apiCreateGame, req)
+	if err != nil {
+		return nil, err
+	}
+	if err := c.responseByJson(ctx, httpReq, rsp); err != nil {
+		return nil, err
+	}
+	return rsp, nil
 }

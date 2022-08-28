@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/xxxsen/errs"
@@ -22,6 +23,16 @@ type GameItem struct {
 	Screentitle string   `xml:"screentitle"`
 	Marquee     string   `xml:"marquee"`
 	Video       string   `xml:"video"`
+	ReleaseDate string   `xml:"releasedate"`
+	Developer   string   `xml:"developer"`
+	Publisher   string   `xml:"publisher"`
+	Lang        string   `xml:"lang"`
+	Region      string   `xml:"region"`
+	PlayCount   string   `xml:"playcount"`
+	Gameime     int      `xml:"gametime"`
+	LastPlayed  string   `xml:"lastplayed"`
+	Rating      float64  `xml:"rating"`
+	Desc        string   `xml:"desc"`
 }
 
 type FolderItem struct {
@@ -133,6 +144,18 @@ func (item *GameItem) GetImages() []string {
 		rs = append(rs, item.Screentitle)
 	}
 	return rs
+}
+
+func (item *GameItem) GetMaxPlayerCount() int {
+	if len(item.PlayCount) == 0 {
+		return 1
+	}
+	arr := strings.Split(item.PlayCount, "-")
+	val, _ := strconv.ParseUint(arr[len(arr)-1], 0, 64)
+	if val == 0 {
+		val = 1
+	}
+	return int(val)
 }
 
 func (item *GameItem) GetVideos() []string {
