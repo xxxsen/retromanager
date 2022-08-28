@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"flag"
-	"fmt"
 	"log"
-	"retromanager/cmd/tools/gamelist"
+	"retromanager/cmd/tools/import_from_dir/importer"
 )
 
 var dir = flag.String("dir", "", "rom dir")
@@ -14,20 +14,19 @@ var apiSvr = flag.String("apisvr", "http://127.0.0.1:9900", "api server addr")
 func main() {
 	flag.Parse()
 
-	gamelistFile := fmt.Sprintf("%s/gamelist.xml", *dir)
-
-	gl, err := gamelist.Parse(gamelistFile)
+	imp, err := importer.New(
+		importer.WithAPISvr(*apiSvr),
+		importer.WithDir(*dir),
+		importer.WithSystem(*system),
+	)
 	if err != nil {
-		log.Panicf("parse gamelist fail, err:%v", err)
+		panic(err)
 	}
-	log.Printf("parse finish, games:%d, folder:%d", len(gl.Games), len(gl.Folders))
-	for _, game := range gl.Games {
-		log.Printf("read game:%+v", *game)
+	if err := imp.Validate(); err != nil {
+		panic(err)
 	}
-	for _, folder := range gl.Folders {
-		log.Printf("read folder:%+v", *folder)
+	if err := imp.DoImport(context.Background()); err != nil {
+		panic(err)
 	}
-	if err := gamelist.Validate(*dir, gl); err != nil {
-		log.Panicf("game validate fail, err:%v", err)
-	}
+	log.Printf("do import finish")
 }

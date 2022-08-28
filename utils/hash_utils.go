@@ -5,6 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"io"
+	"os"
 )
 
 func Md5Raw(raw []byte) []byte {
@@ -29,4 +31,23 @@ func Sha256Raw(raw []byte) []byte {
 
 func CalcSha256Hex(raw []byte) string {
 	return hex.EncodeToString(Sha256Raw(raw))
+}
+
+func CalcMd5Reader(r io.Reader) (string, error) {
+	hash := md5.New()
+	_, err := io.Copy(hash, r)
+
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
+func CalcMd5File(file string) (string, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	return CalcMd5Reader(f)
 }
