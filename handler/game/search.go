@@ -14,28 +14,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-var validSearchField = map[string]bool{
-	"id":           true,
-	"platform":     true,
-	"display_name": true,
-	"file_size":    true,
-	"desc":         true,
-	"create_time":  true,
-	"update_time":  true,
-	"hash":         true,
-	"rating":       true,
-	"players":      true,
-	"genre":        true,
-	"file_name":    true,
-}
+var matchField = []string{"display_name", "file_name", "desc"}
 
 var renameFieldMap = map[string]string{
-	"genre":        "extinfo.genre",
-	"players":      "extinfo.players",
-	"rating":       "extinfo.rating",
-	"display_name": es.WrapWildcard("display_name"),
-	"desc":         es.WrapWildcard("desc"),
-	"file_name":    es.WrapWildcard("file_name"),
+	"genre":   "extinfo.genre",
+	"players": "extinfo.players",
+	"rating":  "extinfo.rating",
 }
 
 func SearchGame(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
@@ -52,14 +36,18 @@ func SearchGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 		req.GetParam().Limit = proto.Uint32(constants.MaxGameSearchLimit)
 	}
 
-	param, err := utils.PBSearchParamsToEsSearchParams(req.GetParam(), renameFieldMap, &validSearchField)
+	param, err := utils.PBSearchParamsToEsSearchParams(req.GetParam())
 	if err != nil {
 		return http.StatusOK, errs.Wrap(errs.ErrParam, "param translate fail", err), nil
 	}
-	searcher := es.FromSearchParam(param)
+	searcher := es.FromSearchParam(
+		param,
+		es.WithMatchField(matchField...),
+		es.WithRenameField(renameFieldMap),
+	)
 	_, alias := es.Index(dao.GameInfoDao.Table(), es.DefaultVersion)
-	searcher.SetIndex(alias)
-	searcher.SetObjectPtr(&gameinfo.GameInfo{})
+	searcher.SetIndex(alias).
+		SetObjectPtr(&gameinfo.GameInfo{})
 	result, total, err := es.GetSearchResult(ctx, es.Client, searcher)
 	if err != nil {
 		return http.StatusOK, errs.Wrap(errs.ErrES, "search es fail", err), nil

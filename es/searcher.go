@@ -44,53 +44,90 @@ type SearchParam struct {
 }
 
 type Searcher struct {
-	q       *elastic.BoolQuery
-	sorters []elastic.Sorter
-	limit   int
-	offset  int
-	index   string
-	objptr  interface{}
+	q        *elastic.BoolQuery
+	sorters  []elastic.Sorter
+	limit    int
+	offset   int
+	index    string
+	objptr   interface{}
+	keyword  map[string]bool
+	wildcard map[string]bool
+	match    map[string]bool
+	rename   map[string]string
 }
 
-func buildSorter(s *Searcher, sorters []*SortValue) {
+func (s *Searcher) list2boolMap(m map[string]bool, fields []string) {
+	for _, field := range fields {
+		m[field] = true
+	}
+}
+
+func (s *Searcher) setRenameField(rename map[string]string) *Searcher {
+	s.rename = rename
+	return s
+}
+
+func (s *Searcher) setKeywordField(fields ...string) *Searcher {
+	s.list2boolMap(s.keyword, fields)
+	return s
+}
+
+func (s *Searcher) setWildcardField(fields ...string) *Searcher {
+	s.list2boolMap(s.wildcard, fields)
+	return s
+}
+
+func (s *Searcher) setMatchField(fields ...string) *Searcher {
+	s.list2boolMap(s.match, fields)
+	return s
+}
+
+func (s *Searcher) realname(field string) string {
+	if v, ok := s.rename[field]; ok {
+		return v
+	}
+	return field
+}
+
+func (s *Searcher) buildSorter(sorters []*SortValue) {
 	if len(sorters) == 0 {
 		return
 	}
 	lst := make([]elastic.Sorter, 0, len(sorters))
 	for _, sorter := range sorters {
-		f := elastic.NewFieldSort(sorter.Field).Order(sorter.Asc)
+		f := elastic.NewFieldSort(s.realname(sorter.Field)).Order(sorter.Asc)
 		lst = append(lst, f)
 	}
 	s.SetSorter(lst...)
 }
 
-func buildRange(s *Searcher, ranges []*RangeValue) {
+func (s *Searcher) buildRange(ranges []*RangeValue) {
 	if len(ranges) == 0 {
 		return
 	}
 	for _, r := range ranges {
-		s.q.Must(elastic.NewRangeQuery(r.Field).Lte(r.Right).Gte(r.Left))
+		s.q.Must(elastic.NewRangeQuery(s.realname(r.Field)).Lte(r.Right).Gte(r.Left))
 	}
 }
 
-func buildFilter(s *Searcher, filters []*FilterValue) {
+func (s *Searcher) buildFilter(filters []*FilterValue) {
 	if len(filters) == 0 {
 		return
 	}
 	for _, filter := range filters {
-		lst := strings.SplitN(filter.Field, "#", 2)
-		field := lst[0]
-		suffix := ""
-		if len(lst) > 1 {
-			suffix = lst[1]
+		if _, ok := s.keyword[filter.Field]; ok {
+			s.q.Must(elastic.NewTermQuery(s.realname(filter.Field)+".keyword", filter.Value))
+			continue
 		}
-		switch suffix {
-		case keySuffixWildcard:
-			s.q.Must(elastic.NewWildcardQuery(field, "*"+filter.Value+"*"))
-		default:
-			s.q.Must(elastic.NewTermQuery(field, filter.Value))
+		if _, ok := s.wildcard[filter.Field]; ok {
+			s.q.Must(elastic.NewWildcardQuery(s.realname(filter.Field), "*"+filter.Value+"*"))
+			continue
 		}
-
+		if _, ok := s.match[filter.Field]; ok {
+			s.q.Must(elastic.NewMatchQuery(s.realname(filter.Field), filter.Value))
+			continue
+		}
+		s.q.Must(elastic.NewTermQuery(s.realname(filter.Field), filter.Value))
 	}
 }
 
@@ -98,26 +135,49 @@ func IsFieldValid(field string) bool {
 	return !strings.Contains(field, "#")
 }
 
-func UnWrapWildcard(field string) string {
-	return strings.TrimSuffix(field, "#"+keySuffixWildcard)
+type SearchOption func(s *Searcher)
+
+func WithRenameField(r map[string]string) SearchOption {
+	return func(s *Searcher) {
+		s.setRenameField(r)
+	}
 }
 
-func WrapWildcard(field string) string {
-	return field + "#" + keySuffixWildcard
+func WithKeywordField(fields ...string) SearchOption {
+	return func(s *Searcher) {
+		s.setKeywordField(fields...)
+	}
 }
 
-func FromSearchParam(param *SearchParam) *Searcher {
-	s := NewSearcher()
+func WithMatchField(fields ...string) SearchOption {
+	return func(s *Searcher) {
+		s.setMatchField(fields...)
+	}
+}
+
+func WithWildcardField(fields ...string) SearchOption {
+	return func(s *Searcher) {
+		s.setWildcardField(fields...)
+	}
+}
+
+func FromSearchParam(param *SearchParam, opts ...SearchOption) *Searcher {
+	s := &Searcher{
+		q:        elastic.NewBoolQuery(),
+		keyword:  map[string]bool{},
+		wildcard: map[string]bool{},
+		match:    map[string]bool{},
+		rename:   map[string]string{},
+	}
+	for _, opt := range opts {
+		opt(s)
+	}
 	s.SetOffset(int(param.Offset))
 	s.SetLimit(int(param.Limit))
-	buildSorter(s, param.SortList)
-	buildRange(s, param.RangeList)
-	buildFilter(s, param.FilterList)
+	s.buildSorter(param.SortList)
+	s.buildRange(param.RangeList)
+	s.buildFilter(param.FilterList)
 	return s
-}
-
-func NewSearcher() *Searcher {
-	return &Searcher{q: elastic.NewBoolQuery()}
 }
 
 func (s *Searcher) SetQuery(q *elastic.BoolQuery) *Searcher {
