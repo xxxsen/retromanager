@@ -38,6 +38,17 @@ func New(opts ...Option) (*Importer, error) {
 	return &Importer{c: c, client: cli, gl: gl}, nil
 }
 
+func (p *Importer) GetGameList() *gamelist.GameList {
+	return p.gl
+}
+
+func (p *Importer) Clean() error {
+	if err := p.gl.Clean(); err != nil {
+		return fmt.Errorf("clean game info fail, err:%w", err)
+	}
+	return nil
+}
+
 func (p *Importer) Validate() error {
 	if err := p.gl.Validate(); err != nil {
 		return fmt.Errorf("game validate fail, err:%w", err)

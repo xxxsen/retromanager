@@ -63,6 +63,45 @@ func (gl *GameList) parseData(raw []byte) error {
 	return nil
 }
 
+func (gl *GameList) FolderSize() int {
+	return len(gl.Folders)
+}
+
+func (gl *GameList) GameSize() int {
+	return len(gl.Games)
+}
+
+//Clean 重建游戏列表, 将列表中异常的数据剔除掉
+func (gl *GameList) Clean() error {
+	games := make([]*GameItem, 0, len(gl.Games))
+	for _, game := range gl.Games {
+		if exist, _ := gl.isFileExist(game.Path); !exist {
+			continue
+		}
+		if exist, _ := gl.isFileExist(game.Image); !exist {
+			game.Image = ""
+		}
+		if exist, _ := gl.isFileExist(game.Boxart); !exist {
+			game.Boxart = ""
+		}
+		if exist, _ := gl.isFileExist(game.Marquee); !exist {
+			game.Marquee = ""
+		}
+		if exist, _ := gl.isFileExist(game.Screenshot); !exist {
+			game.Screenshot = ""
+		}
+		if exist, _ := gl.isFileExist(game.Screentitle); !exist {
+			game.Screentitle = ""
+		}
+		if exist, _ := gl.isFileExist(game.Video); !exist {
+			game.Video = ""
+		}
+		games = append(games, game)
+	}
+	gl.Games = games
+	return nil
+}
+
 func (gl *GameList) Parse(file string) error {
 	raw, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -94,17 +133,21 @@ func (gl *GameList) isFileExist(sub string) (bool, error) {
 
 }
 
+func (item *GameItem) fileList() []string {
+	return []string{
+		item.Path,
+		item.Boxart,
+		item.Image,
+		item.Marquee,
+		item.Video,
+		item.Screenshot,
+		item.Screentitle,
+	}
+}
+
 func (gl *GameList) Validate() error {
 	for _, item := range gl.Games {
-		checkLst := []string{
-			item.Path,
-			item.Boxart,
-			item.Image,
-			item.Marquee,
-			item.Video,
-			item.Screenshot,
-			item.Screentitle,
-		}
+		checkLst := item.fileList()
 		for _, ch := range checkLst {
 			exist, err := gl.isFileExist(ch)
 			if err != nil {
