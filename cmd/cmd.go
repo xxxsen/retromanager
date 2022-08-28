@@ -62,7 +62,12 @@ func main() {
 	); err != nil {
 		logger.With(zap.Error(err)).Fatal("init es fail")
 	}
-	if err := esservice.TryCreateIndex(context.Background(), es.Client, dao.GameInfoDao.Table()); err != nil {
+	if err := esservice.TryCreateIndex(
+		context.Background(),
+		es.Client,
+		dao.GameInfoDao.Table(),
+		esservice.IndexGameInfoTabMapping,
+	); err != nil {
 		logger.With(zap.Error(err)).Fatal("create index fail")
 	}
 
