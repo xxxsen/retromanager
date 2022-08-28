@@ -15,6 +15,7 @@ import (
 	"retromanager/proto/retromanager/gameinfo"
 	"retromanager/utils"
 	"strconv"
+	"strings"
 
 	"github.com/xxxsen/errs"
 	"google.golang.org/protobuf/proto"
@@ -33,9 +34,16 @@ func New(opts ...Option) (*Client, error) {
 	if len(c.host) == 0 {
 		return nil, errs.New(errs.ErrParam, "no host found")
 	}
+	if strings.HasSuffix(c.host, "/") {
+		return nil, errs.New(errs.ErrParam, "host should not end with '/'")
+	}
 	client := &http.Client{}
 
 	return &Client{c: c, client: client}, nil
+}
+
+func (c *Client) buildFullAPI(api string) string {
+	return c.c.host + api
 }
 
 func (c *Client) createMultiPartRequest(api string, kv map[string]string, fparam, fname string, f io.Reader) (*http.Request, error) {
@@ -54,7 +62,7 @@ func (c *Client) createMultiPartRequest(api string, kv map[string]string, fparam
 		return nil, errs.Wrap(errs.ErrIO, "close writer fail", err)
 	}
 
-	req, err := http.NewRequest("POST", api, body)
+	req, err := http.NewRequest("POST", c.buildFullAPI(api), body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	return req, err
 }
@@ -130,7 +138,7 @@ func (c *Client) uploadSmallFileByAPI(ctx context.Context, api string, file stri
 		return nil, errs.Wrap(errs.ErrIO, "open file fail", err)
 	}
 	defer f.Close()
-	req, err := c.createMultiPartRequest(apiUploadFile, map[string]string{"md5": md5v}, "file", path.Base(file), f)
+	req, err := c.createMultiPartRequest(api, map[string]string{"md5": md5v}, "file", path.Base(file), f)
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrServiceInternal, "create multipart req fail", err)
 	}
@@ -156,7 +164,7 @@ func (c *Client) createJsonRequest(api string, body interface{}) (*http.Request,
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrMarshal, "encode json", err)
 	}
-	req, err := http.NewRequest(http.MethodPost, api, bytes.NewReader(raw))
+	req, err := http.NewRequest(http.MethodPost, c.buildFullAPI(api), bytes.NewReader(raw))
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrServiceInternal, "make request fail", err)
 	}

@@ -56,7 +56,7 @@ func (p *Importer) DoImport(ctx context.Context) error {
 
 func (p *Importer) uploadImage(ctx context.Context, game *gamelist.GameItem) ([]string, error) {
 	images := game.GetImages()
-	rs := make([]string, len(images))
+	rs := make([]string, 0, len(images))
 	for _, item := range images {
 		req := &client.UploadImageRequest{
 			File: p.gl.BuildFullPath(item),
@@ -72,7 +72,7 @@ func (p *Importer) uploadImage(ctx context.Context, game *gamelist.GameItem) ([]
 
 func (p *Importer) uploadVideo(ctx context.Context, game *gamelist.GameItem) ([]string, error) {
 	videos := game.GetVideos()
-	rs := make([]string, len(videos))
+	rs := make([]string, 0, len(videos))
 	for _, item := range videos {
 		req := &client.UploadVideoRequest{
 			File: p.gl.BuildFullPath(item),
@@ -128,12 +128,16 @@ func (p *Importer) importOneGame(ctx context.Context, game *gamelist.GameItem) e
 		return err
 	}
 	now := uint64(time.Now().UnixMilli())
+	desc := game.Desc
+	if len(desc) == 0 {
+		desc = "default"
+	}
 	req := &client.CreateGameRequest{
 		Item: &gameinfo.GameInfo{
 			Platform:    proto.Uint32(uint32(p.c.system)),
 			DisplayName: proto.String(game.Name),
 			FileSize:    proto.Uint64(uint64(rominfo.Size)),
-			Desc:        nil,
+			Desc:        proto.String(desc),
 			CreateTime:  proto.Uint64(now),
 			UpdateTime:  proto.Uint64(now),
 			Hash:        proto.String(rominfo.MD5),
