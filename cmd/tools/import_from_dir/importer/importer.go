@@ -6,7 +6,7 @@ import (
 	"log"
 	"path"
 	"retromanager/client"
-	"retromanager/cmd/tools/import_from_dir/gamelist"
+	"retromanager/gamelist"
 	"retromanager/proto/retromanager/gameinfo"
 	"time"
 
