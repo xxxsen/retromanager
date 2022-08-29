@@ -3,6 +3,7 @@ package esservice
 import (
 	"context"
 	"retromanager/es"
+	"strings"
 
 	"github.com/xxxsen/errs"
 
@@ -53,6 +54,24 @@ func TryCreateIndex(ctx context.Context, client *es.EsClient, table string, mapp
 
 	if _, err := client.Alias().Add(index, alias).Do(ctx); err != nil {
 		return errs.Wrap(errs.ErrES, "map alias fail", err)
+	}
+	return nil
+}
+
+func RemoveIndex(ctx context.Context, client *es.EsClient, table string) error {
+	index, alias := es.Index(table, es.DefaultVersion)
+	exists, err := client.IndexExists(index).Do(ctx)
+	if err != nil {
+		return errs.Wrap(errs.ErrES, "check index fail", err)
+	}
+	if !exists {
+		return nil
+	}
+	if _, err := client.Alias().Remove(index, alias).Do(ctx); err != nil && !strings.Contains(err.Error(), "elastic: Error 404 (Not Found)") {
+		return errs.Wrap(errs.ErrES, "delete alias fail", err)
+	}
+	if _, err := client.DeleteIndex().Index([]string{index}).Do(ctx); err != nil {
+		return errs.Wrap(errs.ErrES, "delete index fail", err)
 	}
 	return nil
 }

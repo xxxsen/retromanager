@@ -21,6 +21,7 @@ var gameinfoFields = []string{
 var GameInfoDao GameInfoService = NewGameInfoDao()
 
 type GameInfoService interface {
+	IDBInterator
 	IWatcher
 	Table() string
 	GetGame(ctx context.Context, req *model.GetGameRequest) (*model.GetGameResponse, bool, error)
@@ -36,6 +37,70 @@ type gameinfoImpl struct {
 
 func NewGameInfoDao() *gameinfoImpl {
 	return &gameinfoImpl{}
+}
+
+func (d *gameinfoImpl) IterRows(ctx context.Context, table string, limit int32, cb IterCallbackFunc) error {
+	if table != d.Table() {
+		return errs.New(errs.ErrParam, "unknown table:%s", table)
+	}
+	var start uint64
+	for {
+		rows, err := d.selectByRange(ctx, table, start, limit)
+		if err != nil {
+			return errs.Wrap(errs.ErrDatabase, "select by range fail", err)
+		}
+		gonext, err := cb(ctx, rows)
+		if err != nil {
+			return err
+		}
+		if !gonext {
+			break
+		}
+		if len(rows) < int(limit) {
+			break
+		}
+		start = rows[len(rows)-1].(*model.GameItem).ID
+	}
+	return nil
+}
+
+func (d *gameinfoImpl) selectByRange(ctx context.Context, table string, start uint64, limit int32) ([]interface{}, error) {
+	where := map[string]interface{}{
+		"id >":   start,
+		"_limit": []uint{0, uint(limit)},
+	}
+	fields := gameinfoFields
+
+	sql, args, err := builder.BuildSelect(table, where, fields)
+	if err != nil {
+		return nil, errs.Wrap(errs.ErrParam, "build select", err)
+	}
+	rows, err := d.Client().QueryContext(ctx, sql, args...)
+	if err != nil {
+		return nil, errs.Wrap(errs.ErrDatabase, "query fail", err)
+	}
+	defer rows.Close()
+	rs := make([]interface{}, 0, limit)
+	for rows.Next() {
+		item := &model.GameItem{}
+		if err := d.scanOne(rows, item); err != nil {
+			return nil, errs.Wrap(errs.ErrDatabase, "scan fail", err)
+		}
+		rs = append(rs, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, errs.Wrap(errs.ErrDatabase, "scan fail", err)
+	}
+	return rs, nil
+}
+
+func (d *gameinfoImpl) scanOne(rows *sql.Rows, item *model.GameItem) error {
+	if err := rows.Scan(&item.ID, &item.Platform, &item.DisplayName, &item.FileSize, &item.Desc, &item.CreateTime,
+		&item.UpdateTime, &item.Hash, &item.ExtInfo, &item.DownKey, &item.FileName); err != nil {
+
+		return errs.Wrap(errs.ErrDatabase, "scan fail", err)
+	}
+	return nil
 }
 
 func (d *gameinfoImpl) Watch(notifyer IDataNotifyer) {
@@ -137,10 +202,8 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 	lst := make([]*model.GameItem, 0, req.Limit)
 	for rows.Next() {
 		item := &model.GameItem{}
-		if err := rows.Scan(&item.ID, &item.Platform, &item.DisplayName, &item.FileSize, &item.Desc, &item.CreateTime,
-			&item.UpdateTime, &item.Hash, &item.ExtInfo, &item.DownKey, &item.FileName); err != nil {
-
-			return nil, errs.Wrap(errs.ErrDatabase, "scan", err)
+		if err := d.scanOne(rows, item); err != nil {
+			return nil, errs.Wrap(errs.ErrDatabase, "scan fail", err)
 		}
 		lst = append(lst, item)
 	}
