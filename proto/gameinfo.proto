@@ -12,6 +12,13 @@ message GameExtInfo {
     optional string publisher = 6; //
     optional string releasedate = 7; //
     optional uint32 players = 8; //
+    optional string marquee = 9; //
+    optional string lang = 10; //
+    optional string region = 11; //
+    optional string boxart = 12; //
+    optional string screenshot = 13; //
+    optional string screentitle = 14; //
+    optional uint32 crc = 15; //
 }
 
 message GameInfo {
