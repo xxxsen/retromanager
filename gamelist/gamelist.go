@@ -169,24 +169,8 @@ func (gl *GameList) BuildFullPath(loc string) string {
 	return gl.root + gl.RemovePrefix(loc)
 }
 
-func (item *GameItem) GetImages() []string {
-	rs := make([]string, 0, 5)
-	if len(item.Image) > 0 {
-		rs = append(rs, item.Image)
-	}
-	// if len(item.Boxart) > 0 {
-	// 	rs = append(rs, item.Boxart)
-	// }
-	// if len(item.Marquee) > 0 {
-	// 	rs = append(rs, item.Marquee)
-	// }
-	// if len(item.Screenshot) > 0 {
-	// 	rs = append(rs, item.Screenshot)
-	// }
-	// if len(item.Screentitle) > 0 {
-	// 	rs = append(rs, item.Screentitle)
-	// }
-	return rs
+func (item *GameItem) GetImage() string {
+	return item.Image
 }
 
 func (item *GameItem) GetMaxPlayerCount() int {

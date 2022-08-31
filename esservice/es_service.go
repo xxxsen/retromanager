@@ -39,7 +39,7 @@ func UpsertRecords(ctx context.Context, client *es.EsClient, table string, recor
 	return nil
 }
 
-func TryCreateIndex(ctx context.Context, client *es.EsClient, table string, mapping string) error {
+func TryCreateIndex(ctx context.Context, client *es.EsClient, table string) error {
 	index, alias := es.Index(table, es.DefaultVersion)
 	exists, err := client.IndexExists(index).Do(ctx)
 	if err != nil {
@@ -48,7 +48,7 @@ func TryCreateIndex(ctx context.Context, client *es.EsClient, table string, mapp
 	if exists {
 		return nil
 	}
-	if _, err := client.CreateIndex(index).BodyString(mapping).Do(ctx); err != nil {
+	if _, err := client.CreateIndex(index).Do(ctx); err != nil {
 		return errs.Wrap(errs.ErrES, "create index fail", err)
 	}
 

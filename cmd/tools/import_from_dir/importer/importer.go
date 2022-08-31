@@ -57,44 +57,46 @@ func (p *Importer) Validate() error {
 }
 
 func (p *Importer) DoImport(ctx context.Context) error {
-	for _, item := range p.gl.Games {
-		if err := p.importOneGame(ctx, item); err != nil {
-			return err
-		}
+	run := runner.New(5)
+	for idx, item := range p.gl.Games {
+		item := item
+		run.Add(fmt.Sprintf("import_%d", idx), func(ctx context.Context) error {
+			if err := p.importOneGame(ctx, item); err != nil {
+				return err
+			}
+			return nil
+		})
+
 	}
-	return nil
+	return run.Run(ctx)
 }
 
-func (p *Importer) uploadImage(ctx context.Context, game *gamelist.GameItem) ([]string, error) {
-	images := game.GetImages()
-	rs := make([]string, 0, len(images))
-	for _, item := range images {
-		req := &client.UploadImageRequest{
-			File: p.gl.BuildFullPath(item),
-		}
-		rsp, err := p.client.UploadImage(ctx, req)
-		if err != nil {
-			return nil, errs.Wrap(errs.ErrIO, "upload image fail", err)
-		}
-		rs = append(rs, rsp.Meta.DownKey)
+func (p *Importer) uploadImage(ctx context.Context, path string) (*string, error) {
+	if len(path) == 0 {
+		return nil, nil
 	}
-	return rs, nil
+	req := &client.UploadImageRequest{
+		File: p.gl.BuildFullPath(path),
+	}
+	rsp, err := p.client.UploadImage(ctx, req)
+	if err != nil {
+		return nil, errs.Wrap(errs.ErrIO, "upload image fail", err)
+	}
+	return &rsp.Meta.DownKey, nil
 }
 
-func (p *Importer) uploadVideo(ctx context.Context, game *gamelist.GameItem) ([]string, error) {
-	videos := game.GetVideos()
-	rs := make([]string, 0, len(videos))
-	for _, item := range videos {
-		req := &client.UploadVideoRequest{
-			File: p.gl.BuildFullPath(item),
-		}
-		rsp, err := p.client.UploadVideo(ctx, req)
-		if err != nil {
-			return nil, errs.Wrap(errs.ErrIO, "upload video fail", err)
-		}
-		rs = append(rs, rsp.Meta.DownKey)
+func (p *Importer) uploadVideo(ctx context.Context, path string) (*string, error) {
+	if len(path) == 0 {
+		return nil, nil
 	}
-	return rs, nil
+	req := &client.UploadVideoRequest{
+		File: p.gl.BuildFullPath(path),
+	}
+	rsp, err := p.client.UploadVideo(ctx, req)
+	if err != nil {
+		return nil, errs.Wrap(errs.ErrIO, "upload video fail", err)
+	}
+	return &rsp.Meta.DownKey, nil
 }
 
 func (p *Importer) uploadRom(ctx context.Context, game *gamelist.GameItem) (*client.FileMeta, error) {
@@ -108,33 +110,57 @@ func (p *Importer) uploadRom(ctx context.Context, game *gamelist.GameItem) (*cli
 	return rsp.Meta, nil
 }
 
-func (p *Importer) uploadGameData(ctx context.Context, game *gamelist.GameItem) ([]string, []string, *client.FileMeta, error) {
-	run := runner.New(10)
-	var imagelist []string
-	var videolist []string
-	var romMeta *client.FileMeta
+type uploadContext struct {
+	image       *string
+	video       *string
+	romMeta     *client.FileMeta
+	marquee     *string
+	boxart      *string
+	screentitle *string
+	screenshot  *string
+}
 
+func (p *Importer) uploadGameData(ctx context.Context, game *gamelist.GameItem) (*uploadContext, error) {
+	uctx := &uploadContext{}
+
+	run := runner.New(10)
 	run.Add("upload_image", func(ctx context.Context) error {
 		var err error
-		imagelist, err = p.uploadImage(ctx, game)
+		uctx.image, err = p.uploadImage(ctx, game.Image)
 		return err
 	}).Add("upload_video", func(ctx context.Context) error {
 		var err error
-		videolist, err = p.uploadVideo(ctx, game)
+		uctx.video, err = p.uploadVideo(ctx, game.Video)
 		return err
 	}).Add("upload_rom", func(ctx context.Context) error {
 		var err error
-		romMeta, err = p.uploadRom(ctx, game)
+		uctx.romMeta, err = p.uploadRom(ctx, game)
+		return err
+	}).Add("upload_marquee", func(ctx context.Context) error {
+		var err error
+		uctx.marquee, err = p.uploadImage(ctx, game.Marquee)
+		return err
+	}).Add("upload_boxart", func(ctx context.Context) error {
+		var err error
+		uctx.boxart, err = p.uploadImage(ctx, game.Boxart)
+		return err
+	}).Add("upload_screentitle", func(ctx context.Context) error {
+		var err error
+		uctx.screentitle, err = p.uploadImage(ctx, game.Screenshot)
+		return err
+	}).Add("upload_screenshot", func(ctx context.Context) error {
+		var err error
+		uctx.screenshot, err = p.uploadImage(ctx, game.Screenshot)
 		return err
 	})
 	if err := run.Run(ctx); err != nil {
-		return nil, nil, nil, errs.Wrap(errs.ErrIO, "upload fail", err)
+		return nil, errs.Wrap(errs.ErrIO, "upload fail", err)
 	}
-	return imagelist, videolist, romMeta, nil
+	return uctx, nil
 }
 
 func (p *Importer) importOneGame(ctx context.Context, game *gamelist.GameItem) error {
-	imagelist, videolist, rominfo, err := p.uploadGameData(ctx, game)
+	uctx, err := p.uploadGameData(ctx, game)
 	if err != nil {
 		return err
 	}
@@ -143,28 +169,39 @@ func (p *Importer) importOneGame(ctx context.Context, game *gamelist.GameItem) e
 	if len(desc) == 0 {
 		desc = "default"
 	}
-	req := &client.CreateGameRequest{
-		Item: &gameinfo.GameInfo{
-			Platform:    proto.Uint32(uint32(p.c.system)),
-			DisplayName: proto.String(game.Name),
-			FileSize:    proto.Uint64(uint64(rominfo.Size)),
-			Desc:        proto.String(desc),
-			CreateTime:  proto.Uint64(now),
-			UpdateTime:  proto.Uint64(now),
-			Hash:        proto.String(rominfo.MD5),
-			Extinfo: &gameinfo.GameExtInfo{
-				Genre:       []string{},
-				Video:       videolist,
-				Image:       imagelist,
-				Rating:      proto.Float64(game.Rating),
-				Developer:   proto.String(game.Developer),
-				Publisher:   proto.String(game.Publisher),
-				Releasedate: proto.String(game.ReleaseDate),
-				Players:     proto.Uint32(uint32(game.GetMaxPlayerCount())),
-			},
-			DownKey:  proto.String(rominfo.DownKey),
-			FileName: proto.String(path.Base(game.Path)),
+	item := &gameinfo.GameInfo{
+		Platform:    proto.Uint32(uint32(p.c.system)),
+		DisplayName: proto.String(game.Name),
+		FileSize:    proto.Uint64(uint64(uctx.romMeta.Size)),
+		Desc:        proto.String(desc),
+		CreateTime:  proto.Uint64(now),
+		UpdateTime:  proto.Uint64(now),
+		Hash:        proto.String(uctx.romMeta.MD5),
+		Extinfo: &gameinfo.GameExtInfo{
+			Genre:       []string{},
+			Rating:      proto.Float64(game.Rating),
+			Developer:   proto.String(game.Developer),
+			Publisher:   proto.String(game.Publisher),
+			Releasedate: proto.String(game.ReleaseDate),
+			Players:     proto.Uint32(uint32(game.GetMaxPlayerCount())),
+			Lang:        proto.String(game.Lang),
+			Region:      proto.String(game.Region),
+			Marquee:     uctx.marquee,
+			Boxart:      uctx.boxart,
+			Screenshot:  uctx.screenshot,
+			Screentitle: uctx.screentitle,
 		},
+		DownKey:  proto.String(uctx.romMeta.DownKey),
+		FileName: proto.String(path.Base(game.Path)),
+	}
+	if uctx.image != nil && len(*uctx.image) > 0 {
+		item.Extinfo.Image = []string{*uctx.image}
+	}
+	if uctx.video != nil && len(*uctx.video) > 0 {
+		item.Extinfo.Image = []string{*uctx.video}
+	}
+	req := &client.CreateGameRequest{
+		Item: item,
 	}
 	rsp, err := p.client.CreateGame(ctx, req)
 	if err != nil {

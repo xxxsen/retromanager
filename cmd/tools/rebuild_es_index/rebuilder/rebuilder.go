@@ -30,7 +30,7 @@ func (r *Rebuilder) Rebuild(ctx context.Context) error {
 	if err := esservice.RemoveIndex(ctx, r.esClient, r.gameService.Table()); err != nil {
 		return errs.Wrap(errs.ErrES, "remove es index fail", err)
 	}
-	if err := esservice.TryCreateIndex(ctx, r.esClient, r.gameService.Table(), esservice.IndexGameInfoTabMapping); err != nil {
+	if err := esservice.TryCreateIndex(ctx, r.esClient, r.gameService.Table()); err != nil {
 		return errs.Wrap(errs.ErrES, "build es index fail", err)
 	}
 	if err := r.gameService.IterRows(ctx, dao.GameInfoDao.Table(), 2000, r.rebuild); err != nil {

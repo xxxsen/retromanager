@@ -66,7 +66,6 @@ func main() {
 		context.Background(),
 		es.Client,
 		dao.GameInfoDao.Table(),
-		esservice.IndexGameInfoTabMapping,
 	); err != nil {
 		logger.With(zap.Error(err)).Fatal("create index fail")
 	}
