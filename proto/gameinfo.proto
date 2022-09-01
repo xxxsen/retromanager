@@ -84,6 +84,7 @@ message CreateGameRequest {
 
 message CreateGameResponse {
     optional uint64 game_id = 1; //
+    optional bool is_game_exist = 2; //
 }
 
 message ModifyItem {

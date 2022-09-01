@@ -76,5 +76,9 @@ func CreateGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 		return http.StatusOK, errs.Wrap(errs.ErrDatabase, "create game fail", err), nil
 	}
 	rsp.GameId = proto.Uint64(daoRsp.GameId)
+	rsp.IsGameExist = proto.Bool(false)
+	if daoRsp.AffectRows == 0 {
+		rsp.IsGameExist = proto.Bool(true)
+	}
 	return http.StatusOK, nil, rsp
 }

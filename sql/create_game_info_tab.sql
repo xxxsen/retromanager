@@ -12,7 +12,7 @@ create table game_info_tab (
     down_key varchar(64) not null,
     state tinyint unsigned not null,
     primary key(id),
-    key idx_hash(hash),
+    unique key idx_hash(hash),
     key idx_state_platform_createtime(state, platform, create_time),
     key idx_updatetime(update_time)
 ) ENGINE=InnoDB CHARACTER SET utf8mb4;

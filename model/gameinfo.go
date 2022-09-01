@@ -87,7 +87,8 @@ type CreateGameRequest struct {
 }
 
 type CreateGameResponse struct {
-	GameId uint64
+	GameId     uint64
+	AffectRows int64
 }
 
 type ModifyInfo struct {
