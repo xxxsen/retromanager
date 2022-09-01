@@ -7,16 +7,21 @@ import (
 	"retromanager/proto/retromanager/gameinfo"
 
 	"github.com/xxxsen/errs"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/gin-gonic/gin"
 )
 
 func DeleteGame(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
 	req := request.(*gameinfo.DeleteGameRequest)
-	daoReq := &model.DeleteGameRequest{
+	daoReq := &model.ModifyGameRequest{
 		GameID: req.GetGameId(),
+		State:  proto.Uint32(model.GameStateNormal),
+		Modify: &model.ModifyInfo{
+			State: proto.Uint32(model.GameStateDelete),
+		},
 	}
-	rs, err := dao.GameInfoDao.DeleteGame(ctx, daoReq)
+	rs, err := dao.GameInfoDao.ModifyGame(ctx, daoReq)
 	if err != nil {
 		return http.StatusOK, errs.Wrap(errs.ErrDatabase, "delete db fail", err), nil
 	}

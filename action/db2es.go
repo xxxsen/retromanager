@@ -48,7 +48,7 @@ func (act *DB2ESAction) nop(ctx context.Context, logger *zap.Logger, table strin
 }
 
 func (act *DB2ESAction) onDelete(ctx context.Context, logger *zap.Logger, table string, action model.ActionType, id uint64) {
-	logger.Error("no delete action found")
+	logger.Info("recv delete event, skip")
 }
 
 func (act *DB2ESAction) onChange(ctx context.Context, logger *zap.Logger, table string, action model.ActionType, id uint64) {

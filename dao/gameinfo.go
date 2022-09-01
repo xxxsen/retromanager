@@ -310,16 +310,23 @@ func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequ
 }
 
 func (d *gameinfoImpl) DeleteGame(ctx context.Context, req *model.DeleteGameRequest) (*model.DeleteGameResponse, error) {
-	daoReq := &model.ModifyGameRequest{
-		GameID: req.GameID,
-		State:  proto.Uint32(model.GameStateNormal),
-		Modify: &model.ModifyInfo{
-			State: proto.Uint32(model.GameStateDelete),
-		},
+	where := map[string]interface{}{
+		"id": req.GameID,
 	}
-	daoRsp, err := d.ModifyGame(ctx, daoReq)
+	sql, args, err := builder.BuildDelete(d.Table(), where)
 	if err != nil {
-		return nil, errs.Wrap(errs.ErrDatabase, "exec delete", err)
+		return nil, errs.Wrap(errs.ErrParam, "build delete fail", err)
 	}
-	return &model.DeleteGameResponse{AffectRows: daoRsp.AffectRows}, nil
+	rs, err := d.Client().ExecContext(ctx, sql, args...)
+	if err != nil {
+		return nil, errs.Wrap(errs.ErrDatabase, "exec delete fail", err)
+	}
+	cnt, err := rs.RowsAffected()
+	if err != nil {
+		return nil, errs.Wrap(errs.ErrDatabase, "get rows affect fail", err)
+	}
+	AsyncNotify(ctx, d.Table(), model.ActionDelete, req.GameID, d.notifyers...)
+	return &model.DeleteGameResponse{
+		AffectRows: cnt,
+	}, nil
 }

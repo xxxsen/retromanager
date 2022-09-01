@@ -2,6 +2,7 @@ package esservice
 
 import (
 	"context"
+	"fmt"
 	"retromanager/es"
 	"strings"
 
@@ -72,6 +73,15 @@ func RemoveIndex(ctx context.Context, client *es.EsClient, table string) error {
 	}
 	if _, err := client.DeleteIndex().Index([]string{index}).Do(ctx); err != nil {
 		return errs.Wrap(errs.ErrES, "delete index fail", err)
+	}
+	return nil
+}
+
+func RemoveRecord(ctx context.Context, client *es.EsClient, table string, id uint64) error {
+	_, alias := es.Index(table, es.DefaultVersion)
+	_, err := client.Delete().Index(alias).Id(fmt.Sprintf("%d", id)).Do(ctx)
+	if err != nil {
+		return errs.Wrap(errs.ErrES, "remove record fail", err)
 	}
 	return nil
 }

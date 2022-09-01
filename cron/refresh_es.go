@@ -18,13 +18,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func init() {
-	//每5分钟, 刷新当前时间往前偏移30分钟的数据到es, 最多2000条
-	Regist("*/5 * * * *", newRefreshESCron())
-}
-
 const (
-	maxScanPerBatch    = 2000
+	maxScanPerBatch    = 200
 	maxWriteESPerBatch = 20
 )
 
