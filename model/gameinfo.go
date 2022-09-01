@@ -13,6 +13,7 @@ type ListQuery struct {
 	Platform   *uint32
 	State      *uint32
 	UpdateTime []uint64
+	Hash       *string
 }
 
 type OrderByField string
@@ -87,8 +88,7 @@ type CreateGameRequest struct {
 }
 
 type CreateGameResponse struct {
-	GameId     uint64
-	AffectRows int64
+	GameId uint64
 }
 
 type ModifyInfo struct {

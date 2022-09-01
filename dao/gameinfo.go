@@ -180,6 +180,9 @@ func (d *gameinfoImpl) ListGame(ctx context.Context, req *model.ListGameRequest)
 				where["update_time <="] = req.Query.UpdateTime[1]
 			}
 		}
+		if req.Query.Hash != nil {
+			where["hash"] = *req.Query.Hash
+		}
 	}
 	if req.Order != nil {
 		order := "asc"
@@ -237,7 +240,7 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 			"file_name":    item.FileName,
 		},
 	}
-	sql, args, err := builder.BuildInsertIgnore(d.Table(), data)
+	sql, args, err := builder.BuildInsert(d.Table(), data)
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrParam, "build insert", err)
 	}
@@ -249,14 +252,8 @@ func (d *gameinfoImpl) CreateGame(ctx context.Context, req *model.CreateGameRequ
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrDatabase, "get insert id", err)
 	}
-	cnt, err := rs.RowsAffected()
-	if err != nil {
-		return nil, errs.Wrap(errs.ErrDatabase, "get affect rows fail", err)
-	}
-	if cnt > 0 {
-		AsyncNotify(ctx, d.Table(), model.ActionCreate, uint64(id), d.notifyers...)
-	}
-	return &model.CreateGameResponse{GameId: uint64(id), AffectRows: cnt}, nil
+	AsyncNotify(ctx, d.Table(), model.ActionCreate, uint64(id), d.notifyers...)
+	return &model.CreateGameResponse{GameId: uint64(id)}, nil
 }
 
 func (d *gameinfoImpl) ModifyGame(ctx context.Context, req *model.ModifyGameRequest) (*model.ModifyGameResponse, error) {
