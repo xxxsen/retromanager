@@ -44,7 +44,7 @@ func checkCreate(req *gameinfo.CreateGameRequest) error {
 	return nil
 }
 
-func checkIsGameExist(ctx context.Context, hash string) (bool, error) {
+func checkIsGameExist(ctx context.Context, hash string) (uint64, bool, error) {
 	rsp, err := dao.GameInfoDao.ListGame(ctx, &model.ListGameRequest{
 		Query: &model.ListQuery{
 			Hash: proto.String(hash),
@@ -54,12 +54,12 @@ func checkIsGameExist(ctx context.Context, hash string) (bool, error) {
 		Limit:     1,
 	})
 	if err != nil {
-		return false, err
+		return 0, false, err
 	}
 	if len(rsp.List) == 0 {
-		return false, nil
+		return 0, false, nil
 	}
-	return true, nil
+	return rsp.List[0].ID, true, nil
 }
 
 func CreateGame(ctx *gin.Context, request interface{}) (int, errs.IError, interface{}) {
@@ -70,12 +70,13 @@ func CreateGame(ctx *gin.Context, request interface{}) (int, errs.IError, interf
 		return http.StatusOK, errs.Wrap(errs.ErrParam, "invalid params", err), nil
 	}
 	item := req.GetItem()
-	isExist, err := checkIsGameExist(ctx, item.GetHash())
+	gameid, isExist, err := checkIsGameExist(ctx, item.GetHash())
 	if err != nil {
 		return http.StatusOK, errs.Wrap(errs.ErrDatabase, "check game exist fail", err), nil
 	}
 	if isExist {
 		rsp.IsGameExist = proto.Bool(true)
+		rsp.GameId = proto.Uint64(gameid)
 		return http.StatusOK, nil, rsp
 	}
 	now := uint64(time.Now().UnixNano() / int64(time.Millisecond))
