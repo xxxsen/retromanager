@@ -8,7 +8,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
-	"retromanager/cache"
 	"retromanager/constants"
 	"retromanager/dao"
 	"retromanager/model"
@@ -18,21 +17,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xxxsen/common/s3"
-
-	"github.com/xxxsen/common/errs"
-	"github.com/xxxsen/common/naivesvr"
-
-	"github.com/xxxsen/common/logutil"
-	"github.com/xxxsen/common/naivesvr/codec"
-
 	"github.com/gin-gonic/gin"
+	"github.com/xxxsen/common/cache"
+	"github.com/xxxsen/common/errs"
+	"github.com/xxxsen/common/logutil"
+	"github.com/xxxsen/common/naivesvr"
+	"github.com/xxxsen/common/naivesvr/codec"
+	"github.com/xxxsen/common/s3"
 	"github.com/yitter/idgenerator-go/idgen"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
 
-var fileCache, _ = cache.New(20000)
+var fileCache, _ = cache.NewLocalCache(20000)
 
 var ImageUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeImage), ImageExtChecker))
 var VideoUpload = CommonFilePostUpload(NewFileUploader(uint32(model.FileTypeVideo), VideoExtChecker))
@@ -215,7 +212,7 @@ func CommonFileDownload(downloader IFileDownloader) naivesvr.ProcessFunc {
 	}
 }
 
-func cacheGetFileMeta(ctx context.Context, c *cache.Cache, key interface{},
+func cacheGetFileMeta(ctx context.Context, c cache.ICache, key interface{},
 	cb func() (interface{}, bool, error)) (interface{}, bool, error) {
 
 	ival, exist, _ := c.Get(ctx, key)
@@ -283,10 +280,10 @@ type BasicFileDownloadRequest struct {
 
 type FileDownloader struct {
 	S3FileDownloader
-	c *cache.Cache
+	c cache.ICache
 }
 
-func NewFileDownloader(c *cache.Cache) *FileDownloader {
+func NewFileDownloader(c cache.ICache) *FileDownloader {
 	return &FileDownloader{c: c}
 }
 

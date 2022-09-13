@@ -3,18 +3,16 @@ package cron
 import (
 	"context"
 	"fmt"
-	"retromanager/cache"
 	"retromanager/dao"
 	"retromanager/esservice"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
 	"time"
 
-	"github.com/xxxsen/common/es"
-
-	"github.com/xxxsen/common/logutil"
-
+	"github.com/xxxsen/common/cache"
 	"github.com/xxxsen/common/errs"
+	"github.com/xxxsen/common/es"
+	"github.com/xxxsen/common/logutil"
 
 	"go.uber.org/zap"
 )
@@ -25,11 +23,11 @@ const (
 )
 
 type refreshESCron struct {
-	c *cache.Cache
+	c cache.ICache
 }
 
 func newRefreshESCron() *refreshESCron {
-	c, _ := cache.New(10000)
+	c, _ := cache.NewLocalCache(10000)
 	return &refreshESCron{c: c}
 }
 
