@@ -5,7 +5,7 @@ import (
 	"retromanager/handler/config"
 
 	"github.com/gin-gonic/gin"
-	"github.com/xxxsen/naivesvr"
+	"github.com/xxxsen/common/naivesvr"
 )
 
 func MustGetConfig(ctx *gin.Context) *config.Config {

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+
+	"github.com/xxxsen/common/database"
 )
 
 type DBConfig struct {
@@ -47,13 +49,13 @@ type IDGenConfig struct {
 }
 
 type Config struct {
-	LogInfo    LogConfig    `json:"log_info"`
-	GameDBInfo DBConfig     `json:"game_db_info"`
-	FileDBInfo DBConfig     `json:"file_db_info"`
-	ServerInfo ServerConfig `json:"server_info"`
-	S3Info     S3Config     `json:"s3_info"`
-	IDGenInfo  IDGenConfig  `json:"idgen_info"`
-	EsInfo     EsConfig     `json:"es_info"`
+	LogInfo    LogConfig         `json:"log_info"`
+	GameDBInfo database.DBConfig `json:"game_db_info"`
+	FileDBInfo database.DBConfig `json:"file_db_info"`
+	ServerInfo ServerConfig      `json:"server_info"`
+	S3Info     S3Config          `json:"s3_info"`
+	IDGenInfo  IDGenConfig       `json:"idgen_info"`
+	EsInfo     EsConfig          `json:"es_info"`
 }
 
 func Parse(f string) (*Config, error) {

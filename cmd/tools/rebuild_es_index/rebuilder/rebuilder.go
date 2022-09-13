@@ -11,7 +11,7 @@ import (
 	"retromanager/retry"
 	"time"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 )
 
 type Rebuilder struct {

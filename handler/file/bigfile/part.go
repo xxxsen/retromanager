@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"retromanager/constants"
 	"retromanager/proto/retromanager/gameinfo"
-	"retromanager/s3"
 	"retromanager/utils"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/s3"
+
+	"github.com/xxxsen/common/errs"
 
 	"github.com/gin-gonic/gin"
 )

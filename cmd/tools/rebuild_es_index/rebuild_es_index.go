@@ -10,7 +10,7 @@ import (
 	"retromanager/es"
 	"time"
 
-	"github.com/xxxsen/naivesvr/log"
+	"github.com/xxxsen/common/logger"
 	"go.uber.org/zap"
 )
 
@@ -24,7 +24,7 @@ func main() {
 		panic(err)
 	}
 	logitem := c.LogInfo
-	logger := log.Init(logitem.File, logitem.Level, int(logitem.FileCount), int(logitem.FileSize), int(logitem.KeepDays), logitem.Console)
+	logger := logger.Init(logitem.File, logitem.Level, int(logitem.FileCount), int(logitem.FileSize), int(logitem.KeepDays), logitem.Console)
 
 	logger.Info("recv config", zap.Any("config", c))
 	if err := db.InitGameDB(&c.GameDBInfo); err != nil {

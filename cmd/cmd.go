@@ -14,11 +14,12 @@ import (
 	"retromanager/handler"
 	hconfig "retromanager/handler/config"
 	"retromanager/idgen"
-	"retromanager/s3"
 	"time"
 
-	"github.com/xxxsen/naivesvr"
-	"github.com/xxxsen/naivesvr/log"
+	"github.com/xxxsen/common/naivesvr"
+	"github.com/xxxsen/common/s3"
+
+	"github.com/xxxsen/common/logger"
 
 	"go.uber.org/zap"
 )
@@ -33,7 +34,7 @@ func main() {
 		panic(err)
 	}
 	logitem := c.LogInfo
-	logger := log.Init(logitem.File, logitem.Level, int(logitem.FileCount), int(logitem.FileSize), int(logitem.KeepDays), logitem.Console)
+	logger := logger.Init(logitem.File, logitem.Level, int(logitem.FileCount), int(logitem.FileSize), int(logitem.KeepDays), logitem.Console)
 
 	logger.Info("recv config", zap.Any("config", c))
 

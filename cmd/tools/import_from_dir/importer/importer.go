@@ -10,7 +10,7 @@ import (
 	"retromanager/proto/retromanager/gameinfo"
 	"time"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 	"github.com/xxxsen/runner"
 	"google.golang.org/protobuf/proto"
 )

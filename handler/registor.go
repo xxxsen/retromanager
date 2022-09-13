@@ -6,7 +6,7 @@ import (
 	"retromanager/handler/game"
 	"retromanager/proto/retromanager/gameinfo"
 
-	"github.com/xxxsen/naivesvr/codec"
+	"github.com/xxxsen/common/naivesvr/codec"
 
 	"github.com/gin-gonic/gin"
 )

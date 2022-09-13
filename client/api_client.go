@@ -17,7 +17,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -6,7 +6,7 @@ import (
 	"retromanager/es"
 	"strings"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 
 	"github.com/olivere/elastic/v7"
 )

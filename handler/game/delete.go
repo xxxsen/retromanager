@@ -6,7 +6,7 @@ import (
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/gin-gonic/gin"

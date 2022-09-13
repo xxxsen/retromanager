@@ -3,7 +3,7 @@ package model
 import (
 	"retromanager/proto/retromanager/gameinfo"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 
 	"google.golang.org/protobuf/proto"
 )

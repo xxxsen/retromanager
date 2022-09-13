@@ -8,7 +8,7 @@ import (
 	"retromanager/model"
 	"time"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 
 	"github.com/didi/gendry/builder"
 	"google.golang.org/protobuf/proto"

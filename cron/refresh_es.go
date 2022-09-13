@@ -11,9 +11,9 @@ import (
 	"retromanager/proto/retromanager/gameinfo"
 	"time"
 
-	"github.com/xxxsen/naivesvr/log"
+	"github.com/xxxsen/common/logutil"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 
 	"go.uber.org/zap"
 )
@@ -62,7 +62,7 @@ func (c *refreshESCron) makeKey(id uint64, ts uint64) string {
 }
 
 func (c *refreshESCron) doBusi(ctx context.Context, items []*model.GameItem) error {
-	logger := log.GetLogger(ctx).With(zap.String("name", "refreshESCron.doBusi"))
+	logger := logutil.GetLogger(ctx).With(zap.String("name", "refreshESCron.doBusi"))
 	needWriteList := make([]*gameinfo.GameInfo, 0, len(items))
 	for _, item := range items {
 		key := c.makeKey(item.ID, item.UpdateTime)

@@ -9,8 +9,8 @@ import (
 	"retromanager/model"
 	"strings"
 
-	"github.com/xxxsen/errs"
-	"github.com/xxxsen/naivesvr/log"
+	"github.com/xxxsen/common/errs"
+	"github.com/xxxsen/common/logutil"
 	"github.com/xxxsen/runner"
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
@@ -68,7 +68,7 @@ func (c *cleanRemovedRecordCron) cleanOneItem(ctx context.Context, item *model.G
 	}); err != nil {
 		return err
 	}
-	log.GetLogger(ctx).With(
+	logutil.GetLogger(ctx).With(
 		zap.String("name", "cleanRemovedRecordCron"),
 		zap.Uint64("id", item.ID),
 	).Info("clean record succ")

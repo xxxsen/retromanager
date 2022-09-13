@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/xxxsen/errs"
-	"github.com/xxxsen/naivesvr"
-	"github.com/xxxsen/naivesvr/codec"
-	"github.com/xxxsen/naivesvr/log"
+	"github.com/xxxsen/common/errs"
+	"github.com/xxxsen/common/logutil"
+	"github.com/xxxsen/common/naivesvr"
+	"github.com/xxxsen/common/naivesvr/codec"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -40,9 +40,9 @@ func finderr(args ...interface{}) (string, errs.IError, bool) {
 func wrapHandler(h naivesvr.IHandler) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var statuscode int
-		var derr errs.IError
-		var perr errs.IError
-		var eerr errs.IError
+		var derr error
+		var perr error
+		var eerr error
 		var rsp interface{}
 
 		defer func() {
@@ -50,7 +50,7 @@ func wrapHandler(h naivesvr.IHandler) gin.HandlerFunc {
 			perr = wrapErr(perr)
 			eerr = wrapErr(eerr)
 			step, err, exist := finderr("decode", derr, "proc", perr, "encode", eerr)
-			logger := log.GetLogger(ctx).With(
+			logger := logutil.GetLogger(ctx).With(
 				zap.String("method", ctx.Request.Method),
 				zap.Int("statuscode", statuscode),
 				zap.String("path", ctx.Request.URL.Path),
@@ -88,9 +88,9 @@ func writeJson(ctx *gin.Context, err errs.IError) {
 	ctx.AbortWithStatusJSON(http.StatusOK, m)
 }
 
-func wrapErr(err errs.IError) errs.IError {
+func wrapErr(err error) errs.IError {
 	if err == nil {
 		return errs.ErrOK
 	}
-	return err
+	return errs.FromError(err)
 }

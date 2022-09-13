@@ -4,7 +4,7 @@ import (
 	"retromanager/es"
 	"retromanager/proto/retromanager/gameinfo"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 )
 
 func PBSearchParamsToEsSearchParams(s *gameinfo.SearchParam) (*es.SearchParam, error) {

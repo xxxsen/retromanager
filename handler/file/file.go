@@ -13,18 +13,18 @@ import (
 	"retromanager/dao"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
-	"retromanager/s3"
 	"retromanager/utils"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/xxxsen/errs"
-	"github.com/xxxsen/naivesvr"
+	"github.com/xxxsen/common/s3"
 
-	"github.com/xxxsen/naivesvr/log"
+	"github.com/xxxsen/common/errs"
+	"github.com/xxxsen/common/naivesvr"
 
-	"github.com/xxxsen/naivesvr/codec"
+	"github.com/xxxsen/common/logutil"
+	"github.com/xxxsen/common/naivesvr/codec"
 
 	"github.com/gin-gonic/gin"
 	"github.com/yitter/idgenerator-go/idgen"
@@ -160,7 +160,7 @@ func (f *S3FileDownloader) AfterDownload(ctx *gin.Context, meta *FileDownloadMet
 	if err == nil {
 		return
 	}
-	log.GetLogger(ctx).With(zap.String("path", ctx.Request.URL.Path), zap.Error(err)).Error("file download fail")
+	logutil.GetLogger(ctx).With(zap.String("path", ctx.Request.URL.Path), zap.Error(err)).Error("file download fail")
 }
 
 func CommonFilePostUpload(uploader ISmallFileUploader) naivesvr.ProcessFunc {
@@ -206,7 +206,7 @@ func CommonFileDownload(downloader IFileDownloader) naivesvr.ProcessFunc {
 		}
 		if err := caller(); err != nil {
 			e := errs.FromError(err)
-			log.GetLogger(ctx).With(
+			logutil.GetLogger(ctx).With(
 				zap.String("path", ctx.Request.URL.Path), zap.Error(e),
 			).Error("call file download fail")
 			codec.JsonCodec.Encode(ctx, http.StatusOK, e, nil)

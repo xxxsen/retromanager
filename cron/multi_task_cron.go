@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 )
 
 func init() {

@@ -10,7 +10,7 @@ import (
 	"retromanager/retry"
 	"time"
 
-	"github.com/xxxsen/naivesvr/log"
+	"github.com/xxxsen/common/logutil"
 
 	"go.uber.org/zap"
 )
@@ -28,7 +28,7 @@ func (act *DB2ESAction) Name() string {
 
 func (act *DB2ESAction) OnChange(ctx context.Context, table string, action model.ActionType, id uint64) {
 	var caller = act.nop
-	logger := log.GetLogger(ctx).With(
+	logger := logutil.GetLogger(ctx).With(
 		zap.Int("action", int(action)), zap.Uint64("id", id), zap.String("table", table),
 	)
 	switch action {

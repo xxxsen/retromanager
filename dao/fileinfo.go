@@ -6,7 +6,7 @@ import (
 	"retromanager/db"
 	"retromanager/model"
 
-	"github.com/xxxsen/errs"
+	"github.com/xxxsen/common/errs"
 
 	"github.com/didi/gendry/builder"
 )
