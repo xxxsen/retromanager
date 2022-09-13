@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"retromanager/es"
 	"retromanager/proto/retromanager/gameinfo"
+
+	"github.com/xxxsen/common/es"
 
 	"github.com/xxxsen/common/errs"
 )

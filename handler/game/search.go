@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"retromanager/constants"
 	"retromanager/dao"
-	"retromanager/es"
 	"retromanager/handler/utils"
 	"retromanager/proto/retromanager/gameinfo"
+
+	"github.com/xxxsen/common/es"
 
 	"github.com/xxxsen/common/errs"
 

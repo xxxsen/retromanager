@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"retromanager/dao"
-	"retromanager/es"
 	"retromanager/esservice"
 	"retromanager/model"
 	"strings"
+
+	"github.com/xxxsen/common/es"
 
 	"github.com/xxxsen/common/errs"
 	"github.com/xxxsen/common/logutil"

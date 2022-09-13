@@ -3,8 +3,9 @@ package esservice
 import (
 	"context"
 	"fmt"
-	"retromanager/es"
 	"strings"
+
+	"github.com/xxxsen/common/es"
 
 	"github.com/xxxsen/common/errs"
 

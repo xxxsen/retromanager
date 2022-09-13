@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"retromanager/constants"
-	"retromanager/idgen"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
 	"retromanager/utils"
+
+	"github.com/xxxsen/common/idgen"
 
 	"github.com/xxxsen/common/s3"
 

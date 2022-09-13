@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"retromanager/cache"
 	"retromanager/dao"
-	"retromanager/es"
 	"retromanager/esservice"
 	"retromanager/model"
 	"retromanager/proto/retromanager/gameinfo"
 	"time"
+
+	"github.com/xxxsen/common/es"
 
 	"github.com/xxxsen/common/logutil"
 

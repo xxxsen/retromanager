@@ -9,12 +9,14 @@ import (
 	"retromanager/cron"
 	"retromanager/dao"
 	"retromanager/db"
-	"retromanager/es"
 	"retromanager/esservice"
 	"retromanager/handler"
 	hconfig "retromanager/handler/config"
-	"retromanager/idgen"
 	"time"
+
+	"github.com/xxxsen/common/idgen"
+
+	"github.com/xxxsen/common/es"
 
 	"github.com/xxxsen/common/naivesvr"
 	"github.com/xxxsen/common/s3"

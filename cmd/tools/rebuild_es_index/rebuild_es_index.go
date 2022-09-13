@@ -7,8 +7,9 @@ import (
 	"retromanager/config"
 	"retromanager/dao"
 	"retromanager/db"
-	"retromanager/es"
 	"time"
+
+	"github.com/xxxsen/common/es"
 
 	"github.com/xxxsen/common/logger"
 	"go.uber.org/zap"
