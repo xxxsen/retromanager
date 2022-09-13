@@ -6,39 +6,10 @@ import (
 	"io/ioutil"
 
 	"github.com/xxxsen/common/database"
+	"github.com/xxxsen/common/es"
+	"github.com/xxxsen/common/logger"
+	"github.com/xxxsen/common/s3"
 )
-
-type DBConfig struct {
-	Host string `json:"host"`
-	Port uint32 `json:"port"`
-	User string `json:"user"`
-	Pwd  string `json:"pwd"`
-	DB   string `json:"db"`
-}
-
-type LogConfig struct {
-	File      string `json:"file"`
-	Level     string `json:"level"`
-	FileSize  uint64 `json:"file_size"`
-	FileCount uint64 `json:"file_count"`
-	KeepDays  uint32 `json:"keep_days"`
-	Console   bool   `json:"console"`
-}
-
-type S3Config struct {
-	Endpoint  string `json:"endpoint"`
-	SecretId  string `json:"secret_id"`
-	SecretKey string `json:"secret_key"`
-	UseSSL    bool   `json:"use_ssl"`
-	Bucket    string `json:"bucket"`
-}
-
-type EsConfig struct {
-	User     string   `json:"user"`
-	Password string   `json:"password"`
-	Timeout  int      `json:"timeout"`
-	Host     []string `json:"host"`
-}
 
 type ServerConfig struct {
 	Address string `json:"address"`
@@ -49,13 +20,13 @@ type IDGenConfig struct {
 }
 
 type Config struct {
-	LogInfo    LogConfig         `json:"log_info"`
+	LogInfo    logger.LogConfig  `json:"log_info"`
 	GameDBInfo database.DBConfig `json:"game_db_info"`
 	FileDBInfo database.DBConfig `json:"file_db_info"`
 	ServerInfo ServerConfig      `json:"server_info"`
-	S3Info     S3Config          `json:"s3_info"`
+	S3Info     s3.S3Config       `json:"s3_info"`
 	IDGenInfo  IDGenConfig       `json:"idgen_info"`
-	EsInfo     EsConfig          `json:"es_info"`
+	EsInfo     es.EsConfig       `json:"es_info"`
 }
 
 func Parse(f string) (*Config, error) {

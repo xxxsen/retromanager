@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/xxxsen/common v0.0.7
+	github.com/xxxsen/common v0.0.8
 	github.com/xxxsen/runner v0.0.1
 	github.com/yitter/idgenerator-go v1.3.1
 	go.uber.org/zap v1.23.0

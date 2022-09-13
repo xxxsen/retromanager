@@ -8,12 +8,9 @@ import (
 	"retromanager/model"
 	"time"
 
-	"github.com/xxxsen/common/retry"
-
 	"github.com/xxxsen/common/es"
-
 	"github.com/xxxsen/common/logutil"
-
+	"github.com/xxxsen/common/retry"
 	"go.uber.org/zap"
 )
 
