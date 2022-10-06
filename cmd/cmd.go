@@ -14,15 +14,10 @@ import (
 	hconfig "retromanager/handler/config"
 	"time"
 
-	"github.com/xxxsen/common/idgen"
-
 	"github.com/xxxsen/common/es"
-
-	"github.com/xxxsen/common/naivesvr"
-	"github.com/xxxsen/common/s3"
-
+	"github.com/xxxsen/common/idgen"
 	"github.com/xxxsen/common/logger"
-
+	"github.com/xxxsen/common/naivesvr"
 	"go.uber.org/zap"
 )
 
@@ -44,19 +39,8 @@ func main() {
 		logger.With(zap.Error(err)).Fatal("init game db fail")
 	}
 	dao.GameInfoDao.Watch(action.NewDB2ESAction())
-	if err := db.InitFileDB(&c.FileDBInfo); err != nil {
-		logger.With(zap.Error(err)).Fatal("init media db fail")
-	}
 	if err := idgen.Init(c.IDGenInfo.WorkerID); err != nil {
 		logger.With(zap.Error(err)).Fatal("init idgen fail")
-	}
-	if err := s3.InitGlobal(
-		s3.WithEndpoint(c.S3Info.Endpoint),
-		s3.WithSSL(c.S3Info.UseSSL),
-		s3.WithSecret(c.S3Info.SecretId, c.S3Info.SecretKey),
-		s3.WithBucket(c.S3Info.Bucket),
-	); err != nil {
-		logger.With(zap.Error(err)).Fatal("init s3 fail")
 	}
 	if err := es.Init(
 		es.WithAuth(c.EsInfo.User, c.EsInfo.Password),

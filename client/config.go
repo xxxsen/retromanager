@@ -1,13 +1,28 @@
 package client
 
 type config struct {
-	host string
+	apisvr  string
+	filesvr string
+	ak      string
+	sk      string
 }
 
 type Option func(c *config)
 
-func WithHost(host string) Option {
+func WithAPISvr(host string) Option {
 	return func(c *config) {
-		c.host = host
+		c.apisvr = host
+	}
+}
+
+func WithFileSvr(host string) Option {
+	return func(c *config) {
+		c.filesvr = host
+	}
+}
+
+func WithSecret(ak, sk string) Option {
+	return func(c *config) {
+		c.ak, c.sk = ak, sk
 	}
 }

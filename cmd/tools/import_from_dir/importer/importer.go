@@ -26,7 +26,7 @@ func New(opts ...Option) (*Importer, error) {
 	for _, opt := range opts {
 		opt(c)
 	}
-	cli, err := client.New(client.WithHost(c.apisvr))
+	cli, err := client.New(client.WithAPISvr(c.apisvr), client.WithFileSvr(c.filesvr), client.WithSecret(c.ak, c.sk))
 	if err != nil {
 		return nil, fmt.Errorf("create api client fail, err:%w", err)
 	}
@@ -75,10 +75,10 @@ func (p *Importer) uploadImage(ctx context.Context, path string) (*string, error
 	if len(path) == 0 {
 		return nil, nil
 	}
-	req := &client.UploadImageRequest{
+	req := &client.UploadFileRequest{
 		File: p.gl.BuildFullPath(path),
 	}
-	rsp, err := p.client.UploadImage(ctx, req)
+	rsp, err := p.client.UploadFile(ctx, req)
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrIO, "upload image fail", err)
 	}
@@ -89,10 +89,10 @@ func (p *Importer) uploadVideo(ctx context.Context, path string) (*string, error
 	if len(path) == 0 {
 		return nil, nil
 	}
-	req := &client.UploadVideoRequest{
+	req := &client.UploadFileRequest{
 		File: p.gl.BuildFullPath(path),
 	}
-	rsp, err := p.client.UploadVideo(ctx, req)
+	rsp, err := p.client.UploadFile(ctx, req)
 	if err != nil {
 		return nil, errs.Wrap(errs.ErrIO, "upload video fail", err)
 	}
