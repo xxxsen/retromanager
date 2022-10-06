@@ -8,7 +8,6 @@ import (
 	"github.com/xxxsen/common/database"
 	"github.com/xxxsen/common/es"
 	"github.com/xxxsen/common/logger"
-	"github.com/xxxsen/common/s3"
 )
 
 type ServerConfig struct {
@@ -22,9 +21,7 @@ type IDGenConfig struct {
 type Config struct {
 	LogInfo    logger.LogConfig  `json:"log_info"`
 	GameDBInfo database.DBConfig `json:"game_db_info"`
-	FileDBInfo database.DBConfig `json:"file_db_info"`
 	ServerInfo ServerConfig      `json:"server_info"`
-	S3Info     s3.S3Config       `json:"s3_info"`
 	IDGenInfo  IDGenConfig       `json:"idgen_info"`
 	EsInfo     es.EsConfig       `json:"es_info"`
 }
