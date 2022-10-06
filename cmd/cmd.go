@@ -5,13 +5,11 @@ import (
 	"flag"
 	"retromanager/action"
 	"retromanager/config"
-	"retromanager/constants"
 	"retromanager/cron"
 	"retromanager/dao"
 	"retromanager/db"
 	"retromanager/esservice"
 	"retromanager/handler"
-	hconfig "retromanager/handler/config"
 	"time"
 
 	"github.com/xxxsen/common/es"
@@ -63,7 +61,6 @@ func main() {
 	svr, err := naivesvr.NewServer(
 		naivesvr.WithAddress(c.ServerInfo.Address),
 		naivesvr.WithHandlerRegister(handler.OnRegist),
-		naivesvr.WithAttach(constants.KeyConfigAttach, initServiceConfig(c)),
 	)
 	if err != nil {
 		logger.With(zap.Error(err)).Fatal("init server fail")
@@ -71,8 +68,4 @@ func main() {
 	if err := svr.Run(); err != nil {
 		logger.With(zap.Error(err)).Fatal("run server fail")
 	}
-}
-
-func initServiceConfig(c *config.Config) *hconfig.Config {
-	return &hconfig.Config{}
 }
